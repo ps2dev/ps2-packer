@@ -25,6 +25,14 @@
 #include <stdarg.h>
 #include "dlopen.h"
 
+#ifdef _WIN32
+#define SUFFIX ".dll"
+#elif defined (__APPLE__)
+#define SUFFIX ".dylib"
+#else
+#define SUFFIX ".so"
+#endif
+
 typedef unsigned long int u32;
 typedef unsigned short int u16;
 typedef unsigned char u8;
@@ -575,10 +583,20 @@ void packing(FILE * out, FILE * in, u32 base, int use_asm_n2e) {
 #define BUFSIZ 1024
 #endif
 
+int file_exists(const char * fname) {
+    FILE * f;
+    
+    if (!(f = fopen(fname, "rb")))
+	return 0;
+
+    fclose(f);
+    return 1;
+}
+
 int main(int argc, char ** argv) {
     char c;
     u32 base = 0;
-    char buffer[BUFSIZ];
+    char buffer[BUFSIZ + 1];
     char * packer_name = 0;
     char * stub_name = 0;
     char * packer_dll = 0;
@@ -664,18 +682,20 @@ int main(int argc, char ** argv) {
 	    snprintf(buffer, BUFSIZ, "stub/%s-0088-stub", packer_name);
 	}
 	stub_name = strdup(buffer);
+	if (!file_exists(stub_name))
+	    snprintf(buffer, BUFSIZ, PREFIX "/share/ps2-packer/%s", stub_name);
+	free(stub_name);
+	stub_name = strdup(buffer);
     }
 
     if (!(stub_file = fopen(stub_name, "rb"))) {
 	printe("Unable to open stub file %s\n", stub_name);
     }
     
-#ifdef _WIN32
-    snprintf(buffer, BUFSIZ, "./%s-packer.dll", packer_name);
-#else
-    snprintf(buffer, BUFSIZ, "./%s-packer.so", packer_name);
-#endif
-
+    snprintf(buffer, BUFSIZ, PREFIX "/share/ps2-packer/module/%s-packer" SUFFIX, packer_name);
+    if (!file_exists(buffer))
+	snprintf(buffer, BUFSIZ, PREFIX "./%s-packer" SUFFIX, packer_name);
+    
     packer_dll = strdup(buffer);
     
     printf("Compressing %s...\n", in_name);

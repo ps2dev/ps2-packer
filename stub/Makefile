@@ -1,3 +1,5 @@
+SUBMAKE = MAKE=$(MAKE) $(MAKE) -C
+
 include $(PS2SDK)/Defs.make
 
 EE_CPPFLAGS = -G0 -I $(PS2SDK)/ee/include -I $(PS2SDK)/common/include -I . -I zlib -I lzo -I ucl -D_EE -O3 -Wall -DDO_EXECPS2
@@ -14,17 +16,23 @@ n2e-asm-1d00-stub n2e-asm-one-1d00-stub
 
 all: $(TARGETS)
 
+install: all
+	install $(TARGETS) $(PREFIX)/share/ps2-packer/stub -m 644
+
 dist: $(TARGETS)
 	ee-strip $(TARGETS)
 
-zlib:
-	make -C zlib
+zlib-tag.stamp:
+	$(SUBMAKE) zlib
+	touch zlib-tag.stamp
 
-lzo:
-	make -C lzo
+lzo-tag.stamp:
+	$(SUBMAKE) lzo
+	touch lzo-tag.stamp
 
-ucl:
-	make -C ucl
+ucl-tag.stamp:
+	$(SUBMAKE) ucl
+	touch ucl-tag.stamp
 
 
 ZLIB_SIGNATURE = -Wl,--defsym,_signature=0x42494c5a
@@ -34,10 +42,10 @@ N2B_SIGNATURE = -Wl,--defsym,_signature=0x3142324e
 N2D_SIGNATURE = -Wl,--defsym,_signature=0x3144324e
 N2E_SIGNATURE = -Wl,--defsym,_signature=0x3145324e
 
-zlib-0088-stub: main.o zlib-stub.o zlib
+zlib-0088-stub: main.o zlib-stub.o zlib-tag.stamp
 	$(EE_CC) -nostartfiles ./crt0.s -Wl,--defsym,_start_address=0x0088000 -o zlib-0088-stub main.o zlib-stub.o ./zlib/zlib.a $(EE_LDFLAGS) $(ZLIB_SIGNATURE)
 
-zlib-1d00-stub: main.o zlib-stub.o zlib
+zlib-1d00-stub: main.o zlib-stub.o zlib-tag.stamp
 	$(EE_CC) -nostartfiles ./crt0.s -Wl,--defsym,_start_address=0x1d00000 -o zlib-1d00-stub main.o zlib-stub.o ./zlib/zlib.a $(EE_LDFLAGS) $(ZLIB_SIGNATURE)
 
 
@@ -48,31 +56,31 @@ null-1d00-stub: main.o null-stub.o
 	$(EE_CC) -nostartfiles ./crt0.s -Wl,--defsym,_start_address=0x1d00000 -o null-1d00-stub main.o null-stub.o $(EE_LDFLAGS) $(NULL_SIGNATURE)
 
 
-lzo-0088-stub: main.o lzo-stub.o lzo
+lzo-0088-stub: main.o lzo-stub.o lzo-tag.stamp
 	$(EE_CC) -nostartfiles ./crt0.s -Wl,--defsym,_start_address=0x0088000 -o lzo-0088-stub main.o lzo-stub.o ./lzo/lzo.a $(EE_LDFLAGS) $(LZO_SIGNATURE)
 
-lzo-1d00-stub: main.o lzo-stub.o lzo
+lzo-1d00-stub: main.o lzo-stub.o lzo-tag.stamp
 	$(EE_CC) -nostartfiles ./crt0.s -Wl,--defsym,_start_address=0x1d00000 -o lzo-1d00-stub main.o lzo-stub.o ./lzo/lzo.a $(EE_LDFLAGS) $(LZO_SIGNATURE)
 
 
-n2b-0088-stub: main.o n2b-stub.o ucl
+n2b-0088-stub: main.o n2b-stub.o ucl-tag.stamp
 	$(EE_CC) -nostartfiles ./crt0.s -Wl,--defsym,_start_address=0x0088000 -o n2b-0088-stub main.o n2b-stub.o ./ucl/ucl.a $(EE_LDFLAGS) $(N2B_SIGNATURE)
 
-n2b-1d00-stub: main.o n2b-stub.o ucl
+n2b-1d00-stub: main.o n2b-stub.o ucl-tag.stamp
 	$(EE_CC) -nostartfiles ./crt0.s -Wl,--defsym,_start_address=0x1d00000 -o n2b-1d00-stub main.o n2b-stub.o ./ucl/ucl.a $(EE_LDFLAGS) $(N2B_SIGNATURE)
 
 
-n2d-0088-stub: main.o n2d-stub.o ucl
+n2d-0088-stub: main.o n2d-stub.o ucl-tag.stamp
 	$(EE_CC) -nostartfiles ./crt0.s -Wl,--defsym,_start_address=0x0088000 -o n2d-0088-stub main.o n2d-stub.o ./ucl/ucl.a $(EE_LDFLAGS) $(N2D_SIGNATURE)
 
-n2d-1d00-stub: main.o n2d-stub.o ucl
+n2d-1d00-stub: main.o n2d-stub.o ucl-tag.stamp
 	$(EE_CC) -nostartfiles ./crt0.s -Wl,--defsym,_start_address=0x1d00000 -o n2d-1d00-stub main.o n2d-stub.o ./ucl/ucl.a $(EE_LDFLAGS) $(N2D_SIGNATURE)
 
 
-n2e-0088-stub: main.o n2e-stub.o ucl
+n2e-0088-stub: main.o n2e-stub.o ucl-tag.stamp
 	$(EE_CC) -nostartfiles ./crt0.s -Wl,--defsym,_start_address=0x0088000 -o n2e-0088-stub main.o n2e-stub.o ./ucl/ucl.a $(EE_LDFLAGS) $(N2E_SIGNATURE)
 
-n2e-1d00-stub: main.o n2e-stub.o ucl
+n2e-1d00-stub: main.o n2e-stub.o ucl-tag.stamp
 	$(EE_CC) -nostartfiles ./crt0.s -Wl,--defsym,_start_address=0x1d00000 -o n2e-1d00-stub main.o n2e-stub.o ./ucl/ucl.a $(EE_LDFLAGS) $(N2E_SIGNATURE)
 
 
@@ -84,14 +92,12 @@ n2e-asm-one-1d00-stub: n2e-asm-one-stub.S
 
 
 clean:
-	rm -f *.o $(TARGETS)
-	make -C zlib clean
-	make -C lzo clean
-	make -C ucl clean
+	rm -f *.o $(TARGETS) *-tag.stamp
+	$(SUBMAKE) zlib clean
+	$(SUBMAKE) lzo clean
+	$(SUBMAKE) ucl clean
 
 rebuild: clean all
-
-.PHONY: zlib lzo ucl
 
 %.o : %.c
 	$(EE_CC) $(EE_CFLAGS) $(EE_CPPFLAGS) $(EE_INCS) -c $< -o $@

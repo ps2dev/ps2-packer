@@ -19,6 +19,10 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 */
 
+#ifdef __APPLE__  // macosx supports dlopen directly.
+#define __unix__
+#endif
+
 #ifdef  DJGPP
 #include <sys/dxe.h>
 #elif   defined __unix__                       // also defined under Cygwin (and DJGPP)

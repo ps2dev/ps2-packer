@@ -1,5 +1,5 @@
-PS2-Packer version 0.4
-======================
+PS2-Packer version 0.4.2
+========================
 
 Overview
 --------
@@ -48,6 +48,12 @@ Changelog
 	      added a special "multiple sections" ucl-nrv2e asm only stub, used
 	        the input file has only one section, untested.
 	      tagging as 0.4
+  2004/10/26: finally fixed that damn bss section bug...
+              tagging as 0.4.1
+  2004/11/06: fixed compilation for MacOS X
+              added code to handle modules and stub in global path.
+	      cleaning Makefiles
+	      tagging as 0.4.2
 
 
 Todo

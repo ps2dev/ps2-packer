@@ -1,50 +1,75 @@
+PREFIX = /usr/local/ps2dev/ps2sdk
 
+MAKE = make
+SUBMAKE = MAKE=$(MAKE) $(MAKE) -C
+SHELL = /bin/sh
+SYSTEM = $(shell uname)
 LIBZA = /usr/lib/libz.a
 LIBUCLA = /usr/lib/libucl.a
-VERSION = 0.4.1
+VERSION = 0.4.2
 CC = gcc
-CPPFLAGS = -O3 -Wall -I. -DVERSION=\"$(VERSION)\"
+CPPFLAGS = -O3 -Wall -I. -DVERSION=\"$(VERSION)\" -DPREFIX=\"$(PREFIX)\"
+INSTALL = install
+
+ifeq ($(SYSTEM),Darwin)
+CPPFLAGS += -D__APPLE__
+SHARED = -dynamiclib
+SHAREDSUFFIX = .dylib
+else
+SHARED = -shared
+SHAREDSUFFIX = .so
+endif
+
 
 PACKERS = zlib-packer lzo-packer n2b-packer n2d-packer n2e-packer null-packer
 
 all: ps2-packer packers stubs
 
+install: all
+	$(INSTALL) -d $(PREFIX)/bin
+	$(INSTALL) -d $(PREFIX)/share/ps2-packer/module
+	$(INSTALL) -d $(PREFIX)/share/ps2-packer/stub
+	$(INSTALL) ps2-packer $(PREFIX)/bin -m 755
+	$(INSTALL) $(addsuffix $(SHAREDSUFFIX),$(PACKERS)) $(PREFIX)/share/ps2-packer/module -m 755
+	$(INSTALL) ps2-packer $(PREFIX)/bin -m 755
+	PREFIX=$(PREFIX) $(SUBMAKE) stub install
+
 ps2-packer: ps2-packer.c dlopen.c
 	$(CC) $(CPPFLAGS) ps2-packer.c dlopen.c -o ps2-packer -ldl
 
 stubs:
-	make -C stub
+	$(SUBMAKE) stub
 
-packers: $(addsuffix .so,$(PACKERS))
+packers: $(addsuffix $(SHAREDSUFFIX),$(PACKERS))
 
-zlib-packer.so: zlib-packer.c
-	$(CC) -fPIC $(CPPFLAGS) zlib-packer.c -shared -o zlib-packer.so $(LIBZA)
+zlib-packer$(SHAREDSUFFIX): zlib-packer.c
+	$(CC) -fPIC $(CPPFLAGS) zlib-packer.c $(SHARED) -o zlib-packer.so $(LIBZA)
 
-lzo-packer.so: lzo-packer.c minilzo.c
-	$(CC) -fPIC $(CPPFLAGS) lzo-packer.c minilzo.c -shared -o lzo-packer.so
+lzo-packer$(SHAREDSUFFIX): lzo-packer.c minilzo.c
+	$(CC) -fPIC $(CPPFLAGS) lzo-packer.c minilzo.c $(SHARED) -o lzo-packer.so
 
-n2b-packer.so: n2b-packer.c
-	$(CC) -fPIC $(CPPFLAGS) n2b-packer.c -shared -o n2b-packer.so $(LIBUCLA)
+n2b-packer$(SHAREDSUFFIX): n2b-packer.c
+	$(CC) -fPIC $(CPPFLAGS) n2b-packer.c $(SHARED) -o n2b-packer.so $(LIBUCLA)
 
-n2d-packer.so: n2d-packer.c
-	$(CC) -fPIC $(CPPFLAGS) n2d-packer.c -shared -o n2d-packer.so $(LIBUCLA)
+n2d-packer$(SHAREDSUFFIX): n2d-packer.c
+	$(CC) -fPIC $(CPPFLAGS) n2d-packer.c $(SHARED) -o n2d-packer.so $(LIBUCLA)
 
-n2e-packer.so: n2e-packer.c
-	$(CC) -fPIC $(CPPFLAGS) n2e-packer.c -shared -o n2e-packer.so $(LIBUCLA)
+n2e-packer$(SHAREDSUFFIX): n2e-packer.c
+	$(CC) -fPIC $(CPPFLAGS) n2e-packer.c $(SHARED) -o n2e-packer.so $(LIBUCLA)
 
-null-packer.so: null-packer.c
-	$(CC) -fPIC $(CPPFLAGS) null-packer.c -shared -o null-packer.so
+null-packer$(SHAREDSUFFIX): null-packer.c
+	$(CC) -fPIC $(CPPFLAGS) null-packer.c $(SHARED) -o null-packer.so
 
 
 #
 # This target will produce stripped stubs loaders.
 #
 stubs-dist:
-	make -C stub dist
+	$(SUBMAKE) stub dist
 
 clean:
 	rm -f ps2-packer ps2-packer.exe *.zip *.gz *.dll *.so *.o
-	make -C stub clean
+	$(SUBMAKE) stub clean
 
 rebuild: clean all
 
