@@ -63,6 +63,7 @@ Changelog
 	      created lite version - see README-lite.txt for informations.
 	      tagging as 0.4.4
   2004/12/27: lkz reported a bug in the lite version only - fixed.
+  2005/03/05: added FlushCache(0); FlushCache(2); to be sure...
 
 
 Todo

@@ -61,6 +61,20 @@ zero_loop:
 1:
 	bnez	$s6, loop
 	
+	move	$s0, $a0
+	move	$s1, $a1
+
+	li	$v1, 0x64
+	move	$a0, $0
+	syscall
+	
+	li	$v1, 0x64
+	li	$a0, 2
+	syscall
+	
+	move	$a0, $s0
+	move	$a1, $s1
+	
 	jr	$s5
 
 	.end _start

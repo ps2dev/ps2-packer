@@ -80,9 +80,9 @@ int main(int argc, char ** argv) {
 #ifdef DEBUG
     printf("All done, running!\n");
     SifExitRpc();
+#endif
     FlushCache(2);
     FlushCache(0);
-#endif
 
 #ifdef DO_EXECPS2
     ExecPS2((void *)PackedELF->entryAddr, NULL, argc, argv);
