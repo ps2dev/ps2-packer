@@ -29,6 +29,10 @@ typedef unsigned long int u32;
 typedef unsigned short int u16;
 typedef unsigned char u8;
 
+#ifdef _WIN32
+#define snprintf(buffer, size, args...) sprintf(buffer, args)
+#endif
+
 /* These global variables should contain the data about the loaded stub */
 u8 * stub_section;
 u32 * stub_data;
@@ -37,6 +41,8 @@ u32 stub_base;  /* Loading address */
 u32 stub_size;  /* Size of the stub section */
 u32 stub_zero;  /* Number of bytes to zero-pad at the end of the section */
 u32 stub_signature; /* packer signature located in the stub */
+
+u8 alternative = 0; /* boolean for alternative loading method */
 
 /*
   This is the pointer in our output elf file.
@@ -291,7 +297,7 @@ void prepare_out(FILE * out, u32 base) {
     eh.flags = 0;
     eh.ehsize = sizeof(eh);
     eh.phentsize = sizeof(elf_pheader_t);
-    eh.phnum = 2;
+    eh.phnum = alternative ? 2 : 1;
     eh.shoff = 0;
     eh.shnum = 0;
     eh.shentsize = 0;
@@ -303,6 +309,9 @@ void prepare_out(FILE * out, u32 base) {
     if (fwrite(&eh, 1, sizeof(eh), out) != sizeof(eh)) {
 	printe("Error writing elf header\n");
     }
+    
+    if (!alternative)
+	return;
     
     eph.type = PT_LOAD;
     eph.flags = PF_R | PF_X;
@@ -363,9 +372,13 @@ void packing(FILE * out, FILE * in, u32 base) {
     /* preparing the output program header for that section */
     weph.type = PT_LOAD;
     weph.flags = PF_R | PF_W;
+    if (!alternative)
+	weph.flags |= PF_X;
     weph.offset = data_pointer;
-    weph.vaddr = base;
-    weph.paddr = base;
+    if (alternative) {
+        weph.vaddr = base;
+        weph.paddr = base;
+    }
 #ifdef RESPECT_4096_ALIGN
     weph.align = 0x1000;
 #else
@@ -439,10 +452,37 @@ void packing(FILE * out, FILE * in, u32 base) {
 	free(packed);
     }
     
-    printf("All section deflated, writing program header.\n");
+    if (!alternative) {
+	/* Padd data so they are a multiple of 4. */
+	if (weph.filesz & 0x3) {
+	    weph.filesz += 4;
+	    weph.filesz &= 0xfffffffc;
+	}
+	data_pointer += weph.filesz;
+	fseek(out, data_pointer, SEEK_SET);
+	base = stub_base - weph.filesz;
+	printf("Final base address: %08X\n", base);
+	SWAP32(base);
+        weph.vaddr = base;
+        weph.paddr = base;
+	stub_data[1] = base;
+    
+	printf("Writing stub.\n");
+
+	if (fwrite(stub_section, 1, stub_size, out) != stub_size) {
+	    printe("Error writing stub\n");
+	}
+	
+	weph.filesz += stub_size;	
+    }
+    
+    printf("All data written, writing program header.\n");
     weph.memsz = weph.filesz;
     
-    fseek(out, sizeof(*eh) + sizeof(*eph), SEEK_SET);
+    if (alternative)
+	fseek(out, sizeof(*eh) + sizeof(*eph), SEEK_SET);
+    else
+	fseek(out, sizeof(*eh), SEEK_SET);
     SWAP_ELF_PHEADER(weph);
     if (fwrite(&weph, 1, sizeof(weph), out) != sizeof(weph))
 	printe("Error writing packed program header.\n");
@@ -450,11 +490,17 @@ void packing(FILE * out, FILE * in, u32 base) {
     free(loadbuf);
 }
 
+#ifndef BUFSIZ
+#define BUFSIZ 1024
+#endif
+
 int main(int argc, char ** argv) {
     char c;
-    u32 base = 0x1b00000;
-    char * stub_name = 0;
+    u32 base = 0;
+    char buffer[BUFSIZ];
     char * packer_name = 0;
+    char * stub_name = 0;
+    char * packer_dll = 0;
     void * packer_module = 0;
     FILE * stub_file, * in, * out;
     
@@ -466,6 +512,8 @@ int main(int argc, char ** argv) {
 	switch (c) {
 	case 'b':
 	    base = strtol(optarg, NULL, 0);
+	    alternative = 1;
+	    printf("Using alternative packing method.\n");
 	    break;
 	case 'p':
 	    packer_name = strdup(optarg);
@@ -483,15 +531,25 @@ int main(int argc, char ** argv) {
 	}
     }
     
-    if (!stub_name)
-	stub_name = "stub/n2e-0088-stub";
+    if (!packer_name) {
+	packer_name = "n2e";
+    }
+    
+    if (!stub_name) {
+	if (!base)
+	    snprintf(buffer, BUFSIZ, "stub/%s-1d00-stub", packer_name);
+	else
+	    snprintf(buffer, BUFSIZ, "stub/%s-0088-stub", packer_name);
+	stub_name = strdup(buffer);
+    }
 
-    if (!packer_name)
 #ifdef _WIN32
-	packer_name = "./n2e-packer.dll";
+    snprintf(buffer, BUFSIZ, "./%s-packer.dll", packer_name);
 #else
-	packer_name = "./n2e-packer.so";
+    snprintf(buffer, BUFSIZ, "./%s-packer.so", packer_name);
 #endif
+
+    packer_dll = strdup(buffer);
     
     if ((argc - optind) != 2) {
 	printe("%i files specified, I need exactly 2.\n", argc - optind);
@@ -514,7 +572,7 @@ int main(int argc, char ** argv) {
     fclose(stub_file);
 
     printf("Opening packer.\n");
-    packer_module = open_module(packer_name);
+    packer_module = open_module(packer_dll);
     pack_section = get_symbol(packer_module, "pack_section");
     signature = get_symbol(packer_module, "signature");
     if (signature() != stub_signature) {

@@ -1,7 +1,7 @@
 
 LIBZA = /usr/lib/libz.a
 LIBUCLA = /usr/lib/libucl.a
-VERSION = 0.3b2
+VERSION = 0.3
 CC = gcc
 CPPFLAGS = -O3 -Wall -I. -DVERSION=\"$(VERSION)\"
 
@@ -69,6 +69,10 @@ mingw-zlib:
 mingw-ucl:
 	make -C mingw-ucl
 
+mingw-clean:
+	make -C mingw-zlib clean
+	make -C mingw-ucl clean
+
 dllinit.o: dllinit.c
 	i586-mingw32msvc-gcc -c dllinit.c
 
@@ -132,9 +136,9 @@ dist: all mingw COPYING stubs-dist README.txt ps2-packer.c $(addsuffix .c,$(PACK
 	upx-nrv --best ps2-packer ps2-packer.exe $(addsuffix .dll,$(PACKERS))
 	tar cvfz ps2-packer-$(VERSION)-linux.tar.gz ps2-packer $(addsuffix .so,$(PACKERS)) COPYING stub/*stub README.txt
 	zip -9 ps2-packer-$(VERSION)-win32.zip ps2-packer.exe $(addsuffix .dll,$(PACKERS)) COPYING stub/*stub README.txt
-	tar cvfz ps2-packer-$(VERSION)-src.tar.gz *.{c,h} Makefile COPYING stub/Makefile stub/*.{c,h} stub/crt0.s stub/linkfile stub/zlib/Makefile stub/zlib/*.{c,h} stub/lzo/Makefile stub/lzo/*.{c,h} stub/ucl/Makefile stub/ucl/*.{c,h} README.txt
+	tar cvfz ps2-packer-$(VERSION)-src.tar.gz *.{c,h} Makefile COPYING stub/{Makefile,crt0.s,linkfile,*.{c,h}} stub/{zlib,lzo,ucl}/{Makefile,*.{c,h}} README.txt
 
-redist: clean dist
+redist: clean mingw-clean dist
 
 release: redist
 	rm -f /var/www/ps2-packer/*
