@@ -234,7 +234,8 @@ void remove_section_zeroes(u8 * section, u32 * section_size, u32 * zeroes) {
     while (!section[*section_size - 1 - removed]) {
 	removed++;
     }
-    
+
+#if 0    
     whole_size = *section_size + *zeroes;
     
     if (whole_size & (alignment - 1)) {
@@ -245,6 +246,7 @@ void remove_section_zeroes(u8 * section, u32 * section_size, u32 * zeroes) {
 	if (removed < 0)
 	    removed = 0;
     }
+#endif
     
     printv("Removing %i zeroes to section...\n", removed);
     
