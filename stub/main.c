@@ -9,11 +9,7 @@
 
 #include "packer-stub.h"
 
-#if 0
-/* This seems to cause problems... :-P
-   I think it's because it zeroify too much data...
-   Anyway, please, somebody eventually fix it, that
-   would free up a little bit of code in the final stub :) */
+#if 1
 static void fast_memzero(u8 * ptr, u32 size) {
     u32 t;
     __asm__ volatile ("\n"
@@ -22,16 +18,20 @@ static void fast_memzero(u8 * ptr, u32 size) {
 	"\tnop\n"
 	"\tnop\n"
 	"\tnop\n"
-	"\tsq        $0, 0(%1)\n"
+	"\tsb        $0, 0(%1)\n"
 	"\tsltu      %2, %0, %1\n"
-	"\taddiu     %1, 16\n"
+	"\taddiu     %1, 1\n"
 	"\tbnez      %2, 1b\n"
 	: "=r" (t) : "r" (ptr), "r" (size)
     );
 }
+#elif 1
+static void fast_memzero(u8 * ptr, u32 size) {
+    while (size--) *(ptr++) = 0;
+}
 #else
 #include <string.h>
-#define fast_memzero(ptr, size) memset(ptr, 0, size)
+#define fast_memzero(ptr,size) memset(ptr,0,size)
 #endif
 
 /* Code highly inspired from sjeep's sjcrunch */

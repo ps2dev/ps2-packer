@@ -43,7 +43,11 @@ u32 stub_signature; /* packer signature located in the stub */
   The program sections in a PS2 elf seems to be 4096-bytes aligned, so, we
   start at 4096 ( = 0x1000 )
 */
+#ifdef RESPECT_4096_ALIGN
 u32 data_pointer = 0x1000;
+#else
+u32 data_pointer = 0x80;
+#endif
 
 struct option long_options[] = {
     {"help",    0, NULL, 'h'},
@@ -201,6 +205,13 @@ u8 ident[] = {
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
 };
 
+void remove_section_zeroes(u8 * section, u32 * section_size, u32 * zeroes) {
+    while (!section[*section_size - 1]) {
+	(*section_size)--;
+	(*zeroes)++;
+    }
+}
+
 /* Loads the stub file in memory, filling up the global variables */
 void load_stub(FILE * stub) {
     u8 * loadbuf, * pdata;
@@ -242,7 +253,6 @@ void load_stub(FILE * stub) {
 	stub_base = eph[i].vaddr;
 	stub_zero = eph[i].memsz - eph[i].filesz;
 	
-	printf("Loaded stub: %08X bytes (with %08X zeroes) based at %08X\n", stub_size, stub_zero, stub_base);
 	
 	loaded = 1;
 	break;
@@ -254,7 +264,10 @@ void load_stub(FILE * stub) {
     stub_data = (u32 *) (stub_section + stub_pc - stub_base - 8);
     stub_signature = stub_data[0];
     SWAP32(stub_signature);
-	
+    
+    remove_section_zeroes(stub_section, &stub_size, &stub_zero);
+    printf("Loaded stub: %08X bytes (with %08X zeroes) based at %08X\n", stub_size, stub_zero, stub_base);
+
     free(loadbuf);
 }
 
@@ -298,7 +311,11 @@ void prepare_out(FILE * out, u32 base) {
     eph.paddr = stub_base;
     eph.filesz = stub_size;
     eph.memsz = stub_size + stub_zero;
+#ifdef RESPECT_4096_ALIGN
     eph.align = 0x1000;
+#else
+    eph.align = 0x80;
+#endif
     
     SWAP_ELF_PHEADER(eph);
     
@@ -316,11 +333,20 @@ void prepare_out(FILE * out, u32 base) {
     }
     
     data_pointer += stub_size;
+    printf("Actual pointer in file = %08X\n", data_pointer);
     /* Align the pointer to a 4096 bytes boundary if necessary */
+#if RESPECT_4096_ALIGN
     if (data_pointer & 0x0FFF) {
 	data_pointer += 0x1000;
 	data_pointer &= 0xFFFFF000;
     }
+#else
+    if (data_pointer & 0x07F) {
+	data_pointer += 0x80;
+	data_pointer &= 0xFFFFFF80;
+    }
+#endif
+    printf("Realigned pointer in file = %08X\n", data_pointer);
 }
 
 /* Will produce the second program section of the elf, by packing all the
@@ -340,7 +366,11 @@ void packing(FILE * out, FILE * in, u32 base) {
     weph.offset = data_pointer;
     weph.vaddr = base;
     weph.paddr = base;
+#ifdef RESPECT_4096_ALIGN
     weph.align = 0x1000;
+#else
+    weph.align = 0x80;
+#endif
 
     fseek(in, 0, SEEK_END);
     size = ftell(in);
@@ -389,6 +419,7 @@ void packing(FILE * out, FILE * in, u32 base) {
 	psh.virtualAddr = eph[i].vaddr;
 	psh.zeroByteSize = eph[i].memsz - eph[i].filesz;
 	
+	remove_section_zeroes(pdata, &section_size, &psh.zeroByteSize);
 	printf("Loaded section: %08X bytes (with %08X zeroes) based at %08X\n", psh.originalSize, psh.zeroByteSize, psh.virtualAddr);
 	
 	psh.compressedSize = packed_size = pack_section(pdata, &packed, section_size);
@@ -453,13 +484,13 @@ int main(int argc, char ** argv) {
     }
     
     if (!stub_name)
-	stub_name = "stub/zlib-0088-stub";
+	stub_name = "stub/n2e-0088-stub";
 
     if (!packer_name)
 #ifdef _WIN32
-	packer_name = "./zlib-packer.dll";
+	packer_name = "./n2e-packer.dll";
 #else
-	packer_name = "./zlib-packer.so";
+	packer_name = "./n2e-packer.so";
 #endif
     
     if ((argc - optind) != 2) {

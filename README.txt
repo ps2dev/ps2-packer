@@ -25,7 +25,22 @@ Changelog
 	      adding "lzo" module.
 	      tagging as version 0.3b
 	      adding "ucl" modules (n2b, n2d and n2e algos)
-	      tagging as version 0.3b2
+	      tagging as version 0.3b2 (yeah, okay, still a bit fast :D)
+	      changing alignment of data sections to 0x80 instead of the
+	        standard 0x1000. Caution: may break things.
+	      added a small code to remove the extra zeroes at the end of the
+	        section, moving them to bss.
+	      cleaning up ucl's uncrunching source code.
+	      changed default to use n2e algorithm instead of zlib.
+	      changed "memzero" in the stubs to a small asm version.
+
+
+Todo
+----
+
+  -) Changing current module design to pass on arguments.
+  -) Write a proper documentation about "how to write new modules".
+  -) Add RNC and RC4 modules.
 
 
 History
@@ -41,8 +56,7 @@ Source code and legal stuff
 
   This code is covered by GPL. Actually, I don't give a shit about licenses
 and stuff. If you don't like it covered by GPL, just ask me, and we'll change
-it. The only problem is it uses getopt, and dlopen, and the win32 source code
-for them is GPL, so...
+it. The only problem is it uses modified version of a lot of GPLed code, so...
 
   This code was inspired by various sources, especially sjcrunch's main.c, and
 sjuncrunch. Some idea from mrbrown too :)
@@ -57,15 +71,15 @@ How it works
     -b base        sets the loading base of the compressed data.
                       0x1b00000 by default.
     -p packer      sets a new packer module.
-                      zlib-packer by default.
+                      n2e-packer by default.
     -s stub        sets another zlib uncruncher stub.
-                      stub/zlib-0088-stub by default.
+                      stub/n2e-0088-stub by default.
 
   Now, you have to understand the mechanism. The output elf will contain two
 program sections. The first one will be the uncruncher stub. By default, it's
-a zlib stub compiled to be loaded at 0x88000. You may want to compile other
-stubs, to get different loading addresses. I provide another stub which loads
-at 0x1a00000. Should you produce new stubs, just change the stub/Makefile.
+a ucl's n2e stub compiled to be loaded at 0x88000. You may want to compile
+other stubs, to get different loading addresses. I provide another stub which
+loads at 0x1a00000. Should you produce new stubs, just change the stub/Makefile.
 The second section contains the packed data. This basically can be loaded
 anywhere. That is the "base" option of the command line.
 

@@ -7,7 +7,7 @@
 void Decompress(u8 *dest, const u8 *src, u32 dst_size, u32 src_size) {
     int r, unpack_size;
     
-    r = ucl_nrv2d_decompress_8(src, src_size, dest, &unpack_size, NULL);
+    r = ucl_nrv2d_decompress_8(src, src_size, dest, &unpack_size);
     
     if (r != UCL_E_OK) {
 #ifdef DEBUG

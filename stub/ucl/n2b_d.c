@@ -25,34 +25,22 @@
    http://www.oberhumer.com/opensource/ucl/
  */
 
+/*
+ *
+ * Hand-modified for ps2-packer.
+ *
+ */
+    
+#include "ucl_conf.h"
+#include "getbit.h"
+#define getbit(bb)      getbit_8(bb,src,ilen)
 
-/***********************************************************************
-// actual implementation used by a recursive #include
-************************************************************************/
-
-#ifdef getbit
-
-#ifdef SAFE
-#define fail(x,r)   if (x) { *dst_len = olen; return r; }
-#else
-#define fail(x,r)
-#endif
-
+UCL_PUBLIC(int)
+ucl_nrv2b_decompress_8          ( const ucl_bytep src, ucl_uint  src_len,
+                                        ucl_bytep dst, ucl_uintp dst_len)
 {
     ucl_uint32 bb = 0;
-#ifdef TEST_OVERLAP
-    ucl_uint ilen = src_off, olen = 0, last_m_off = 1;
-#else
     ucl_uint ilen = 0, olen = 0, last_m_off = 1;
-#endif
-#ifdef SAFE
-    const ucl_uint oend = *dst_len;
-#endif
-
-#ifdef TEST_OVERLAP
-    src_len += src_off;
-    fail(oend >= src_len, UCL_E_OVERLAP_OVERRUN);
-#endif
 
     for (;;)
     {
@@ -60,20 +48,11 @@
 
         while (getbit(bb))
         {
-            fail(ilen >= src_len, UCL_E_INPUT_OVERRUN);
-            fail(olen >= oend, UCL_E_OUTPUT_OVERRUN);
-#ifdef TEST_OVERLAP
-            fail(olen > ilen, UCL_E_OVERLAP_OVERRUN);
-            olen++; ilen++;
-#else
             dst[olen++] = src[ilen++];
-#endif
         }
         m_off = 1;
         do {
             m_off = m_off*2 + getbit(bb);
-            fail(ilen >= src_len, UCL_E_INPUT_OVERRUN);
-            fail(m_off > UCL_UINT32_C(0xffffff) + 3, UCL_E_LOOKBEHIND_OVERRUN);
         } while (!getbit(bb));
         if (m_off == 2)
         {
@@ -81,7 +60,6 @@
         }
         else
         {
-            fail(ilen >= src_len, UCL_E_INPUT_OVERRUN);
             m_off = (m_off-3)*256 + src[ilen++];
             if (m_off == UCL_UINT32_C(0xffffffff))
                 break;
@@ -94,61 +72,17 @@
             m_len++;
             do {
                 m_len = m_len*2 + getbit(bb);
-                fail(ilen >= src_len, UCL_E_INPUT_OVERRUN);
-                fail(m_len >= oend, UCL_E_OUTPUT_OVERRUN);
             } while (!getbit(bb));
             m_len += 2;
         }
         m_len += (m_off > 0xd00);
-        fail(olen + m_len > oend, UCL_E_OUTPUT_OVERRUN);
-        fail(m_off > olen, UCL_E_LOOKBEHIND_OVERRUN);
-#ifdef TEST_OVERLAP
-        olen += m_len + 1;
-        fail(olen > ilen, UCL_E_OVERLAP_OVERRUN);
-#else
         {
             const ucl_bytep m_pos;
             m_pos = dst + olen - m_off;
             dst[olen++] = *m_pos++;
             do dst[olen++] = *m_pos++; while (--m_len > 0);
         }
-#endif
     }
     *dst_len = olen;
     return ilen == src_len ? UCL_E_OK : (ilen < src_len ? UCL_E_INPUT_NOT_CONSUMED : UCL_E_INPUT_OVERRUN);
 }
-
-#undef fail
-
-#endif /* getbit */
-
-
-/***********************************************************************
-// decompressor entries for the different bit-buffer sizes
-************************************************************************/
-
-#ifndef getbit
-
-#include "ucl_conf.h"
-//#include <ucl/ucl.h>
-#include "getbit.h"
-
-
-UCL_PUBLIC(int)
-ucl_nrv2b_decompress_8          ( const ucl_bytep src, ucl_uint  src_len,
-                                        ucl_bytep dst, ucl_uintp dst_len,
-                                        ucl_voidp wrkmem )
-{
-#define getbit(bb)      getbit_8(bb,src,ilen)
-#include "n2b_d.c"
-#undef getbit
-}
-
-
-#endif /* !getbit */
-
-
-/*
-vi:ts=4:et
-*/
-

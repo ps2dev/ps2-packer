@@ -129,7 +129,7 @@ null-packer.dll: null-packer.c dllinit.o
 dist: all mingw COPYING stubs-dist README.txt ps2-packer.c $(addsuffix .c,$(PACKERS))
 	strip ps2-packer $(addsuffix .so,$(PACKERS))
 	i586-mingw32msvc-strip ps2-packer.exe $(addsuffix .dll,$(PACKERS))
-	upx-nrv --force ps2-packer ps2-packer.exe $(addsuffix .dll,$(PACKERS))
+	upx-nrv --best ps2-packer ps2-packer.exe $(addsuffix .dll,$(PACKERS))
 	tar cvfz ps2-packer-$(VERSION)-linux.tar.gz ps2-packer $(addsuffix .so,$(PACKERS)) COPYING stub/*stub README.txt
 	zip -9 ps2-packer-$(VERSION)-win32.zip ps2-packer.exe $(addsuffix .dll,$(PACKERS)) COPYING stub/*stub README.txt
 	tar cvfz ps2-packer-$(VERSION)-src.tar.gz *.{c,h} Makefile COPYING stub/Makefile stub/*.{c,h} stub/crt0.s stub/linkfile stub/zlib/Makefile stub/zlib/*.{c,h} stub/lzo/Makefile stub/lzo/*.{c,h} stub/ucl/Makefile stub/ucl/*.{c,h} README.txt
