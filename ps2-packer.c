@@ -773,6 +773,8 @@ int main(int argc, char ** argv) {
     }
     
     packer_dll = strdup(buffer);
+#else
+    use_asm_n2e = ((sections == 1) ? 2 : 1);
 #endif
     
     printf("Compressing %s...\n", in_name);

@@ -62,6 +62,7 @@ Changelog
                 the asm stubs.
 	      created lite version - see README-lite.txt for informations.
 	      tagging as 0.4.4
+  2004/12/27: lkz reported a bug in the lite version only - fixed.
 
 
 Todo
