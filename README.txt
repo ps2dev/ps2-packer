@@ -1,12 +1,13 @@
-PS2-Packer version 0.3b
-=======================
+PS2-Packer version 0.3b2
+========================
 
 Overview
 --------
 
   This tool is designed to help you create packed ELF to run on the PS2.
 It has a modular design, so anybody could write any kind of module to it.
-It actually has a zlib module only.
+It actually has a zlib module, a lzo module, three ucl modules (n2b, n2d and
+n2e) and a null module, for demo purpose only.
 
 
 Changelog
@@ -23,6 +24,8 @@ Changelog
               adding "null" module as an example.
 	      adding "lzo" module.
 	      tagging as version 0.3b
+	      adding "ucl" modules (n2b, n2d and n2e algos)
+	      tagging as version 0.3b2
 
 
 History

@@ -1,10 +1,11 @@
 
 LIBZA = /usr/lib/libz.a
-VERSION = 0.3b
+LIBUCLA = /usr/lib/libucl.a
+VERSION = 0.3b2
 CC = gcc
 CPPFLAGS = -O3 -Wall -I. -DVERSION=\"$(VERSION)\"
 
-PACKERS = zlib-packer lzo-packer null-packer
+PACKERS = zlib-packer lzo-packer n2b-packer n2d-packer n2e-packer null-packer
 
 all: ps2-packer packers stubs
 
@@ -21,6 +22,15 @@ zlib-packer.so: zlib-packer.c
 
 lzo-packer.so: lzo-packer.c minilzo.c
 	$(CC) -fPIC $(CPPFLAGS) lzo-packer.c minilzo.c -shared -o lzo-packer.so
+
+n2b-packer.so: n2b-packer.c
+	$(CC) -fPIC $(CPPFLAGS) n2b-packer.c -shared -o n2b-packer.so $(LIBUCLA)
+
+n2d-packer.so: n2d-packer.c
+	$(CC) -fPIC $(CPPFLAGS) n2d-packer.c -shared -o n2d-packer.so $(LIBUCLA)
+
+n2e-packer.so: n2e-packer.c
+	$(CC) -fPIC $(CPPFLAGS) n2e-packer.c -shared -o n2e-packer.so $(LIBUCLA)
 
 null-packer.so: null-packer.c
 	$(CC) -fPIC $(CPPFLAGS) null-packer.c -shared -o null-packer.so
@@ -56,6 +66,9 @@ mingw-packers: $(addsuffix .dll,$(PACKERS))
 mingw-zlib:
 	make -C mingw-zlib
 
+mingw-ucl:
+	make -C mingw-ucl
+
 dllinit.o: dllinit.c
 	i586-mingw32msvc-gcc -c dllinit.c
 
@@ -77,6 +90,33 @@ lzo-packer.dll: lzo-packer.c dllinit.o
 	i586-mingw32msvc-ld --base-file tmp.base tmp.exp --dll -o lzo-packer.dll lzo-packer.o minilzo.o dllinit.o -e _DllMain@12 -lmingw32 -lkernel32 -lmoldname -lmsvcrt $(MINGW_LIBGCC)
 	rm tmp.base tmp.exp tmp.def lzo-packer.o minilzo.o
 
+n2b-packer.dll: n2b-packer.c mingw-ucl dllinit.o
+	i586-mingw32msvc-gcc -c n2b-packer.c -I mingw-ucl
+	echo EXPORTS > tmp.def
+	i586-mingw32msvc-nm n2b-packer.o dllinit.o | grep '^........ [T] _' | sed 's/[^_]*_//' >> tmp.def
+	i586-mingw32msvc-ld --base-file tmp.base --dll -o n2b-packer.dll n2b-packer.o dllinit.o -e _DllMain@12 mingw-ucl/ucl.a -lmingw32 -lkernel32 -lmoldname -lmsvcrt $(MINGW_LIBGCC)
+	i586-mingw32msvc-dlltool --dllname n2b-packer.dll --def tmp.def --base-file tmp.base --output-exp tmp.exp
+	i586-mingw32msvc-ld --base-file tmp.base tmp.exp --dll -o n2b-packer.dll n2b-packer.o dllinit.o -e _DllMain@12 mingw-ucl/ucl.a -lmingw32 -lkernel32 -lmoldname -lmsvcrt $(MINGW_LIBGCC)
+	rm tmp.base tmp.exp tmp.def n2b-packer.o
+
+n2d-packer.dll: n2d-packer.c mingw-ucl dllinit.o
+	i586-mingw32msvc-gcc -c n2d-packer.c -I mingw-ucl
+	echo EXPORTS > tmp.def
+	i586-mingw32msvc-nm n2d-packer.o dllinit.o | grep '^........ [T] _' | sed 's/[^_]*_//' >> tmp.def
+	i586-mingw32msvc-ld --base-file tmp.base --dll -o n2d-packer.dll n2d-packer.o dllinit.o -e _DllMain@12 mingw-ucl/ucl.a -lmingw32 -lkernel32 -lmoldname -lmsvcrt $(MINGW_LIBGCC)
+	i586-mingw32msvc-dlltool --dllname n2d-packer.dll --def tmp.def --base-file tmp.base --output-exp tmp.exp
+	i586-mingw32msvc-ld --base-file tmp.base tmp.exp --dll -o n2d-packer.dll n2d-packer.o dllinit.o -e _DllMain@12 mingw-ucl/ucl.a -lmingw32 -lkernel32 -lmoldname -lmsvcrt $(MINGW_LIBGCC)
+	rm tmp.base tmp.exp tmp.def n2d-packer.o
+
+n2e-packer.dll: n2e-packer.c mingw-ucl dllinit.o
+	i586-mingw32msvc-gcc -c n2e-packer.c -I mingw-ucl
+	echo EXPORTS > tmp.def
+	i586-mingw32msvc-nm n2e-packer.o dllinit.o | grep '^........ [T] _' | sed 's/[^_]*_//' >> tmp.def
+	i586-mingw32msvc-ld --base-file tmp.base --dll -o n2e-packer.dll n2e-packer.o dllinit.o -e _DllMain@12 mingw-ucl/ucl.a -lmingw32 -lkernel32 -lmoldname -lmsvcrt $(MINGW_LIBGCC)
+	i586-mingw32msvc-dlltool --dllname n2e-packer.dll --def tmp.def --base-file tmp.base --output-exp tmp.exp
+	i586-mingw32msvc-ld --base-file tmp.base tmp.exp --dll -o n2e-packer.dll n2e-packer.o dllinit.o -e _DllMain@12 mingw-ucl/ucl.a -lmingw32 -lkernel32 -lmoldname -lmsvcrt $(MINGW_LIBGCC)
+	rm tmp.base tmp.exp tmp.def n2e-packer.o
+
 null-packer.dll: null-packer.c dllinit.o
 	i586-mingw32msvc-gcc -c null-packer.c
 	echo EXPORTS > tmp.def
@@ -92,7 +132,7 @@ dist: all mingw COPYING stubs-dist README.txt ps2-packer.c $(addsuffix .c,$(PACK
 	upx-nrv --force ps2-packer ps2-packer.exe $(addsuffix .dll,$(PACKERS))
 	tar cvfz ps2-packer-$(VERSION)-linux.tar.gz ps2-packer $(addsuffix .so,$(PACKERS)) COPYING stub/*stub README.txt
 	zip -9 ps2-packer-$(VERSION)-win32.zip ps2-packer.exe $(addsuffix .dll,$(PACKERS)) COPYING stub/*stub README.txt
-	tar cvfz ps2-packer-$(VERSION)-src.tar.gz *.{c,h} Makefile COPYING stub/Makefile stub/*.{c,h} stub/crt0.s stub/linkfile stub/zlib/Makefile stub/zlib/*.{c,h} stub/lzo/Makefile stub/lzo/*.{c,h} README.txt
+	tar cvfz ps2-packer-$(VERSION)-src.tar.gz *.{c,h} Makefile COPYING stub/Makefile stub/*.{c,h} stub/crt0.s stub/linkfile stub/zlib/Makefile stub/zlib/*.{c,h} stub/lzo/Makefile stub/lzo/*.{c,h} stub/ucl/Makefile stub/ucl/*.{c,h} README.txt
 
 redist: clean dist
 
@@ -100,4 +140,4 @@ release: redist
 	rm -f /var/www/ps2-packer/*
 	cp *.gz *.zip COPYING README.txt /var/www/ps2-packer
 
-.PHONY: mingw-zlib
+.PHONY: mingw-zlib mingw-ucl
