@@ -1,4 +1,4 @@
-PS2-Packer version 0.4.2
+PS2-Packer version 0.4.3
 ========================
 
 Overview
@@ -54,6 +54,10 @@ Changelog
               added code to handle modules and stub in global path.
 	      cleaning Makefiles
 	      tagging as 0.4.2
+  2004/11/26: added module search path in argv[0] as well.
+              fixed a multiple-section critical bug.
+	      fixed a bit the asm stub code.
+	      tagging as 0.4.3
 
 
 Todo

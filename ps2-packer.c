@@ -606,10 +606,19 @@ int main(int argc, char ** argv) {
     FILE * stub_file, * in, * out;
     u32 size_in, size_out;
     int sections, use_asm_n2e = 0;
+    char * pwd;
     
     sanity_checks();
     
     show_banner();
+    
+    if ((pwd = strrchr(argv[0], '/'))) {
+	*pwd = 0;
+    } else if ((pwd = strrchr(argv[0], '\\'))) {
+	*pwd = 0;
+    }
+    
+    pwd = argv[0];
     
     while ((c = getopt_long(argc, argv, "b:a:p:s:hv", long_options, NULL)) != EOF) {
 	switch (c) {
@@ -682,8 +691,12 @@ int main(int argc, char ** argv) {
 	    snprintf(buffer, BUFSIZ, "stub/%s-0088-stub", packer_name);
 	}
 	stub_name = strdup(buffer);
-	if (!file_exists(stub_name))
+	if (!file_exists(stub_name)) {
 	    snprintf(buffer, BUFSIZ, PREFIX "/share/ps2-packer/%s", stub_name);
+	    if (!file_exists(buffer)) {
+		snprintf(buffer, BUFSIZ, "%s/%s", pwd, stub_name);
+	    }
+	}
 	free(stub_name);
 	stub_name = strdup(buffer);
     }
@@ -693,8 +706,11 @@ int main(int argc, char ** argv) {
     }
     
     snprintf(buffer, BUFSIZ, PREFIX "/share/ps2-packer/module/%s-packer" SUFFIX, packer_name);
-    if (!file_exists(buffer))
-	snprintf(buffer, BUFSIZ, PREFIX "./%s-packer" SUFFIX, packer_name);
+    if (!file_exists(buffer)) {
+	snprintf(buffer, BUFSIZ, "%s/%s-packer" SUFFIX, pwd, packer_name);
+	if (!file_exists(buffer))
+	    snprintf(buffer, BUFSIZ, "./%s-packer" SUFFIX, packer_name);
+    }
     
     packer_dll = strdup(buffer);
     

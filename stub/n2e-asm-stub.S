@@ -43,16 +43,14 @@ loop:
 	
 	lw	$s0, 4($s2)
 	lw	$s1, 12($s2)
+	addiu	$s2, 16
 	addu	$s2, $s1
 	andi	$s1, $s2, 3
 
 	.set noreorder
 zero_loop:
-	nop
-	nop
-	nop
-	nop
 	sb	$0, 0($s4)
+	addiu   $s4, 1
 	bnez	$s0, zero_loop
 	addiu	$s0, -1
 	

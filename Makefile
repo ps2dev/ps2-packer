@@ -6,7 +6,7 @@ SHELL = /bin/sh
 SYSTEM = $(shell uname)
 LIBZA = /usr/lib/libz.a
 LIBUCLA = /usr/lib/libucl.a
-VERSION = 0.4.2
+VERSION = 0.4.3
 CC = gcc
 CPPFLAGS = -O3 -Wall -I. -DVERSION=\"$(VERSION)\" -DPREFIX=\"$(PREFIX)\"
 INSTALL = install
