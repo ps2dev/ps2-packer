@@ -134,6 +134,8 @@ How it works
     -p packer      sets a packer name. n2e by default.
     -s stub        sets another uncruncher stub. stub/n2e-1d00-stub by default,
                       or stub/n2e-0088-stub when using alternative packing.
+    -r reload      sets a reload base of the stub. Beware, that will only works
+                      with the special asm stubs.
     -a align       sets section alignment. 16 by default. Any value accepted.
                       However, here is a list of alignments to know:
 		1 - no alignment, risky, shouldn't work.
@@ -153,6 +155,9 @@ will be forced to reside at a certain location. That's the alternative packing
 method. The output elf will contain two program sections. The first one will
 be the uncruncher stub. The second section contains the packed data, loaded at
 the address you specified.
+
+  The reload option is meant to forcibily relink the stub to another address.
+This will only work with the asm stubs though; be careful when using it.
 
   So, depending on your needs, just move the data around, to get the desired
 results.

@@ -31,7 +31,7 @@ _start:
 	addiu	$s0, $s2, 16 // skip entry point, original size, zero byte size, virtual address, == source
 	lw	$s3, 4($s2)
 	addu	$s4, $s3, $s1
-	jal	n2e_decompress
+	bal	n2e_decompress
 	
 	lw	$s0, 8($s2)
 

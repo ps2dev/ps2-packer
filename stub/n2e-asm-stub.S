@@ -39,7 +39,7 @@ loop:
 	addiu	$s0, $s2, 16	// skip original size, zero byte size, virtual address, compressed size, == source
 	lw	$s3, 0($s2)
 	addu	$s4, $s3, $s1
-	jal	n2e_decompress
+	bal	n2e_decompress
 	
 	lw	$s0, 4($s2)
 	lw	$s1, 12($s2)

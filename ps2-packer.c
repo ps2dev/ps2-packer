@@ -50,6 +50,8 @@ u32 stub_size;  /* Size of the stub section */
 u32 stub_zero;  /* Number of bytes to zero-pad at the end of the section */
 u32 stub_signature; /* packer signature located in the stub */
 
+u32 reload = 0;
+
 u8 alternative = 0; /* boolean for alternative loading method */
 u32 alignment = 0x10;
 
@@ -62,6 +64,7 @@ struct option long_options[] = {
     {"help",    0, NULL, 'h'},
     {"packer",  1, NULL, 'p'},
     {"base",    1, NULL, 'b'},
+    {"reload",  1, NULL, 'r'},
     {"stub",    1, NULL, 's'},
     {"align",   1, NULL, 'a'},
     {"verbose", 1, NULL, 'v'},
@@ -217,13 +220,15 @@ void show_banner() {
 
 void show_usage() {
     printf(
-	"Usage: ps2-packer [-v] [-a ...] [-b ...] [-p ...] [-s ...] <in_elf> <out_elf>\n"
+	"Usage: ps2-packer [-v] [-a X] [-b X] [-p X] [-s X] [-r X] <in_elf> <out_elf>\n"
 	"    -v             verbose mode.\n"
 	"    -b base        sets the loading base of the compressed data. When activated\n"
 	"                     it will activate the alternative packing way.\n"
         "    -p packer      sets a packer name. n2e by default.\n"
 	"    -s stub        sets another uncruncher stub. stub/n2e-asm-1d00-stub,\n"
 	"                     or stub/n2e-0088-stub when using alternative packing.\n"
+	"    -r reload      sets a reload base of the stub. Beware, that will only works\n"
+	"                     with the special asm stubs.\n"
 	"    -a align       sets section alignment. 16 by default. Any value accepted.\n"
     );
 }
@@ -345,6 +350,9 @@ void load_stub(FILE * stub) {
 	
 	stub_base = eph[i].vaddr;
 	stub_zero = eph[i].memsz - eph[i].filesz;
+	
+	if (reload != 0)
+	    stub_base = reload;
 	
 	
 	loaded = 1;
@@ -620,7 +628,7 @@ int main(int argc, char ** argv) {
     
     pwd = argv[0];
     
-    while ((c = getopt_long(argc, argv, "b:a:p:s:hv", long_options, NULL)) != EOF) {
+    while ((c = getopt_long(argc, argv, "b:a:p:s:hvr:", long_options, NULL)) != EOF) {
 	switch (c) {
 	case 'b':
 	    base = strtol(optarg, NULL, 0);
@@ -634,6 +642,9 @@ int main(int argc, char ** argv) {
 	    break;
 	case 's':
 	    stub_name = strdup(optarg);
+	    break;
+	case 'r':
+	    reload = strtol(optarg, NULL, 0);
 	    break;
 	case 'v':
 	    verbose = 1;

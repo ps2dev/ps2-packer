@@ -39,7 +39,7 @@ n2e_decompress:
     
 main_loop:					// for (;;)
 
-        jal	    getbit                   	// while (getbit(bb))
+        bal	getbit                   	// while (getbit(bb))
         nop
         beqz	    $v0, m_off_loop
     	li	    m_off, 1			// m_off = 1 (doing it there, in the unused delay slot) */
@@ -50,13 +50,13 @@ main_loop:					// for (;;)
     	    addiu	    dest, 1
 
 m_off_loop:
-	    jal		    getbit		// + getbi...
+	    bal		    getbit		// + getbi...
 	    sll		    m_off, 1		// m_off = m_off * 2...
-	    jal		    getbit		// if (getbit(bb)...
+	    bal		    getbit		// if (getbit(bb)...
 	    addu	    m_off, $v0		// ..t(bb)
 	    bnez	    $v0, exit_m_off_loop	// ... break  (and m_off-- as a side effect)
 	    addiu	    m_off, -1		// m_off = (m_off-1)..
-	    jal		    getbit		// + getbi...
+	    bal		    getbit		// + getbi...
 	    sll		    m_off, 1		// ..*2
 	b		m_off_loop              // for(;;)
 	    addu	    m_off, $v0          // ..t(bb)
@@ -65,7 +65,7 @@ exit_m_off_loop:
 	addiu	    m_off, -1			// if (!(--m_off)) ...
 	bnez	    m_off, m_off_diff_2
 	nop
-	    jal	        getbit                  // m_len = getbit(bb)
+	    bal	        getbit                  // m_len = getbit(bb)
 	    move	m_off, last_m_off       // m_off = last_m_off
 	b	    exit_if_moff_eq_2
 	    move	m_len, $v0
@@ -89,7 +89,7 @@ m_off_diff_2:                                   // else
 
 exit_if_moff_eq_2:
 
-        jal	    getbit			// prefetch next bit, can be used twice
+        bal	    getbit			// prefetch next bit, can be used twice
         nop
         beqz	    m_len, else_1               // if (m_len)
         nop
@@ -101,9 +101,9 @@ else_1:
     
 	    addiu	m_len, 1                // m_len++
 while_m_len:
-                jal	    getbit              // + getbit(bb)
+                bal	    getbit              // + getbit(bb)
                 sll	    m_len, 1            // m_len * 2
-            jal		getbit                  // preparing the condition
+            bal		getbit                  // preparing the condition
                 addu	    m_len, $v0          // m_len = ...
             beqz	$v0, while_m_len        // while(!getbit(bb))
             nop
@@ -111,7 +111,7 @@ while_m_len:
             addiu	m_len, 5                // m_len += 5 (+2 from the original code)
 
 else_2_reversed:
-            jal	        getbit                  // m_len = 5 + getbit(bb) (still + 2 from the original code)
+            bal	        getbit                  // m_len = 5 + getbit(bb) (still + 2 from the original code)
             nop
             addiu	m_len, $v0, 5
 	
