@@ -12,19 +12,27 @@
 .global _start
 .global	_exit
 .global PackedELF
+.global Signature
 
 	.extern	_heap_size
 	.extern	_stack
 	.extern _stack_size
+	.extern _signature
 
 	.text
 
-	nop
-	nop
+#
+# This signature has to be stored right before the PackedELF location. It will
+# be used to identify the stubs against the compression modules inside the
+# packer. It can also be used by the unpacker stub to see if the compressor is
+# matching the stub.
+#
+Signature:
+	.word	_signature
 
 #
-# This variable has to be the 3rd word of the final stub. That way, the
-# packer will eventually change it so to match the user's options.
+# This variable has to be stored right before the _start location. That
+# way, the packer will change it so to match the user's options.
 #
 PackedELF:
 	.word	0x1b00000

@@ -1,13 +1,12 @@
-PS2-Packer version 0.2.1
-========================
+PS2-Packer version 0.3b
+=======================
 
 Overview
 --------
 
-  This (very preliminary) tool is designed to help you create packed ELF to
-run on the PS2. It actually only works with zlib, and has a poor design, but
-I hope to have a modular system afterward, so people could write "plugins"
-with new stubs and new compressors.
+  This tool is designed to help you create packed ELF to run on the PS2.
+It has a modular design, so anybody could write any kind of module to it.
+It actually has a zlib module only.
 
 
 Changelog
@@ -20,6 +19,7 @@ Changelog
 	      release of version 0.2 :-P (yeah, okay, okay, a bit too fast...)
   2004/08/05: commenting the source, putting it into ps2dev's CVS.
   2004/08/10: removing error messages into zlib, saving a few bytes.
+  2004/08/12: adding module capability to the whole, moved code into modules.
 
 
 History
@@ -35,8 +35,8 @@ Source code and legal stuff
 
   This code is covered by GPL. Actually, I don't give a shit about licenses
 and stuff. If you don't like it covered by GPL, just ask me, and we'll change
-it. The only problem is it uses getopt, and the win32 source code for it is
-GPL, so...
+it. The only problem is it uses getopt, and dlopen, and the win32 source code
+for them is GPL, so...
 
   This code was inspired by various sources, especially sjcrunch's main.c, and
 sjuncrunch. Some idea from mrbrown too :)
@@ -45,13 +45,13 @@ sjuncrunch. Some idea from mrbrown too :)
 How it works
 ------------
 
-  Usage line: ps2-packer [-l level] [-b base] [-s stub] <in_elf> <out_elf>
+  Usage line: ps2-packer [-b base] [-p packer] [-s stub] <in_elf> <out_elf>
   
   Explanation of the options:
-    -l level       sets the zlib compression level.
-                      9 by default.
     -b base        sets the loading base of the compressed data.
                       0x1b00000 by default.
+    -p packer      sets a new packer module.
+                      zlib-packer by default.
     -s stub        sets another zlib uncruncher stub.
                       stub/zlib-0088-stub by default.
 
@@ -70,8 +70,6 @@ results.
 Bugs and limitations
 --------------------
 
--) It's hardly hardcoded to work with zlib. Should get around it, but, since
-   I am a lazy bastard, this can take ages.
 -) It's poorly coded :-P
 
 

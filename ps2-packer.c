@@ -17,15 +17,13 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#define VERSION "0.2.1"
-
 #include <stdlib.h>
 #include <unistd.h>
 #include <stdio.h>
 #include <string.h>
 #include <getopt.h>
 #include <stdarg.h>
-#include <zlib.h>
+#include "dlopen.h"
 
 typedef unsigned long int u32;
 typedef unsigned short int u16;
@@ -33,10 +31,12 @@ typedef unsigned char u8;
 
 /* These global variables should contain the data about the loaded stub */
 u8 * stub_section;
+u32 * stub_data;
 u32 stub_pc;    /* Starting point */
 u32 stub_base;  /* Loading address */
 u32 stub_size;  /* Size of the stub section */
 u32 stub_zero;  /* Number of bytes to zero-pad at the end of the section */
+u32 stub_signature; /* packer signature located in the stub */
 
 /*
   This is the pointer in our output elf file.
@@ -47,7 +47,7 @@ u32 data_pointer = 0x1000;
 
 struct option long_options[] = {
     {"help",    0, NULL, 'h'},
-    {"level",   1, NULL, 'l'},
+    {"packer",  1, NULL, 'p'},
     {"base",    1, NULL, 'b'},
     {"stub",    1, NULL, 's'},
     {0,         0, NULL,  0 },
@@ -60,6 +60,11 @@ void printe(char * fmt, ...) {
     va_end(list);
     exit(-1);
 }
+
+typedef int (*pack_section_t)(const u8 * source, u8 ** dest, u32 source_size);
+pack_section_t pack_section;
+typedef u32 (*signature_t)();
+signature_t signature;
 
 u8 bigendian = 0;
 u32 ELF_MAGIC = 0x464c457f;
@@ -186,7 +191,7 @@ void show_banner() {
 
 void show_usage() {
     printf(
-	"Usage: ps2-packer [-l level] [-b base] [-s stub] <in_elf> <out_elf>\n"
+	"Usage: ps2-packer [-b base] [-p packer] [-s stub] <in_elf> <out_elf>\n"
     );
 }
 
@@ -245,6 +250,10 @@ void load_stub(FILE * stub) {
     
     if (!loaded)
 	printe("Unable to load stub file.\n");
+
+    stub_data = (u32 *) (stub_section + stub_pc - stub_base - 8);
+    stub_signature = stub_data[0];
+    SWAP32(stub_signature);
 	
     free(loadbuf);
 }
@@ -300,7 +309,7 @@ void prepare_out(FILE * out, u32 base) {
     fseek(out, data_pointer, SEEK_SET);
     
     SWAP32(base);
-    ((u32 *) stub_section)[2] = base;
+    stub_data[1] = base;
     
     if (fwrite(stub_section, 1, stub_size, out) != stub_size) {
 	printe("Error writing stub\n");
@@ -316,7 +325,7 @@ void prepare_out(FILE * out, u32 base) {
 
 /* Will produce the second program section of the elf, by packing all the
    program headers of the input file */
-void packing(FILE * out, FILE * in, u32 base, int level) {
+void packing(FILE * out, FILE * in, u32 base) {
     u8 * loadbuf, * pdata, * packed;
     int size, section_size, packed_size;
     int i;
@@ -324,7 +333,6 @@ void packing(FILE * out, FILE * in, u32 base, int level) {
     elf_pheader_t *eph = 0, weph;
     packed_Header ph;
     packed_SectionHeader psh;
-    z_stream c_stream;
 
     /* preparing the output program header for that section */
     weph.type = PT_LOAD;
@@ -383,30 +391,9 @@ void packing(FILE * out, FILE * in, u32 base, int level) {
 	
 	printf("Loaded section: %08X bytes (with %08X zeroes) based at %08X\n", psh.originalSize, psh.zeroByteSize, psh.virtualAddr);
 	
-	packed_size = section_size * 1.2 + 2048;
-	packed = (u8 *) malloc(packed_size);
+	packed_size = pack_section(pdata, &packed, section_size);
 	
-	c_stream.zalloc = (alloc_func)0;
-	c_stream.zfree = (free_func)0;
-	c_stream.opaque = (voidpf)0;
-	
-	if (deflateInit(&c_stream, level) != Z_OK)
-	    printe("Error during deflateInit.\n");
-	
-	c_stream.next_in = pdata;
-	c_stream.avail_in = section_size;
-	c_stream.next_out = packed;
-	c_stream.avail_out = packed_size;
-	
-	if (deflate(&c_stream, Z_FINISH) != Z_STREAM_END)
-	    printe("Error during deflate.\n");
-	
-	if (deflateEnd(&c_stream) != Z_OK)
-	    printe("Error during deflateEnd.\n");
-	
-	psh.compressedSize = packed_size = c_stream.total_out;
-	
-	printf("Section deflated, from %u to %u bytes, ratio = %5.2f%%\n", section_size, packed_size, 100.0 * (section_size - packed_size) / section_size);
+	printf("Section packed, from %u to %u bytes, ratio = %5.2f%%\n", section_size, packed_size, 100.0 * (section_size - packed_size) / section_size);
 	
 	SWAP_PACKED_SECTION_HEADER(psh);
 	if (fwrite(&psh, 1, sizeof(psh), out) != sizeof(psh))
@@ -415,6 +402,8 @@ void packing(FILE * out, FILE * in, u32 base, int level) {
 	if (fwrite(packed, 1, packed_size, out) != packed_size)
 	    printe("Error writing packed section.\n");
 	weph.filesz += packed_size;
+
+	psh.compressedSize = packed_size;
 	
 	free(packed);
     }
@@ -434,20 +423,21 @@ int main(int argc, char ** argv) {
     char c;
     u32 base = 0x1b00000;
     char * stub_name = 0;
+    char * packer_name = 0;
+    void * packer_module = 0;
     FILE * stub_file, * in, * out;
-    int level = 9;
     
     sanity_checks();
     
     show_banner();
     
-    while ((c = getopt_long(argc, argv, "l:b:s:h", long_options, NULL)) != EOF) {
+    while ((c = getopt_long(argc, argv, "b:p:s:h", long_options, NULL)) != EOF) {
 	switch (c) {
-	case 'l':
-	    level = strtol(optarg, NULL, 0);
-	    break;
 	case 'b':
 	    base = strtol(optarg, NULL, 0);
+	    break;
+	case 'p':
+	    packer_name = strdup(optarg);
 	    break;
 	case 's':
 	    stub_name = strdup(optarg);
@@ -464,6 +454,13 @@ int main(int argc, char ** argv) {
     
     if (!stub_name)
 	stub_name = "stub/zlib-0088-stub";
+
+    if (!packer_name)
+#ifdef _WIN32
+	packer_name = "./zlib-packer.dll";
+#else
+	packer_name = "./zlib-packer.so";
+#endif
     
     if ((argc - optind) != 2) {
 	printe("%i files specified, I need exactly 2.\n", argc - optind);
@@ -480,19 +477,24 @@ int main(int argc, char ** argv) {
     if (!(out = fopen(argv[optind++], "wb"))) {
 	printe("Unable to open output file %s\n", argv[optind - 1]);
     }
-
-    printf("Loading stub file.\n");
     
+    printf("Loading stub file.\n");
     load_stub(stub_file);
     fclose(stub_file);
+
+    printf("Opening packer.\n");
+    packer_module = open_module(packer_name);
+    pack_section = get_symbol(packer_module, "pack_section");
+    signature = get_symbol(packer_module, "signature");
+    if (signature() != stub_signature) {
+	printe("Packer's signature and stub's signature are not matching.\n");
+    }
     
     printf("Preparing output elf file.\n");
-    
     prepare_out(out, base);
     
     printf("Packing.\n");
-    
-    packing(out, in, base, level);
+    packing(out, in, base);
     
     printf("Done!\n");
     

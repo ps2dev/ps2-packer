@@ -1,4 +1,4 @@
-/* This is the zlib uncompression stub for ps2-packer */
+/* This is the main stub file for ps2-packer */
 
 #include <tamtypes.h>
 #include <kernel.h>
@@ -7,7 +7,7 @@
 #include <sifrpc.h>
 #endif
 
-#include "zlib.h"
+#include "packer-stub.h"
 
 #if 0
 /* This seems to cause problems... :-P
@@ -37,23 +37,6 @@ static void fast_memzero(u8 * ptr, u32 size) {
 void Decompress(u8 *dest, u8 *src, u32 dst_size, u32 src_size);
 
 /* Code highly inspired from sjeep's sjcrunch */
-
-/*
-  The data stream, located at the pointer PackedELF is created that way:
-   | packed_Header | packed_SectionHeader | compressed data | packed_SectionHeader | compressed data | ...
-*/
-
-typedef struct {
-    u32 entryAddr;
-    u32 numSections;
-} packed_Header;
-
-typedef struct {
-    u32 compressedSize;
-    u32 originalSize;
-    u32 zeroByteSize;
-    u32 virtualAddr;
-} packed_SectionHeader;
 
 /* That variable comes from the crt0.s file. */
 extern packed_Header * PackedELF;
@@ -94,38 +77,4 @@ int main(int argc, char ** argv) {
 
     ExecPS2((void *)PackedELF->entryAddr, NULL, argc, argv);
     return 0;
-}
-
-void Decompress(u8 *dest, u8 *src, u32 dst_size, u32 src_size) {
-    z_stream d_stream;
-    
-    d_stream.zalloc = (alloc_func)0;
-    d_stream.zfree = (free_func)0;
-    d_stream.opaque = (voidpf)0;
-    
-    d_stream.next_in = src;
-    d_stream.avail_in = src_size;
-    d_stream.next_out = dest;
-    d_stream.avail_out = dst_size;
-    
-    if (inflateInit(&d_stream) != Z_OK) {
-#ifdef DEBUG
-	printf("Error during inflateInit\n");
-#endif
-	SleepThread();
-    }
-    
-    if (inflate(&d_stream, Z_NO_FLUSH) != Z_STREAM_END) {
-#ifdef DEBUG
-	printf("Error during inflate.\n");
-#endif
-	SleepThread();
-    }
-    
-    if (inflateEnd(&d_stream) != Z_OK) {
-#ifdef DEBUG
-	printf("Error during inflateEnd.\n");
-#endif
-	SleepThread();
-    }
 }

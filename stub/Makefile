@@ -13,22 +13,24 @@ dist: $(TARGETS)
 zlib:
 	make -C zlib
 
-# The linking order is important here.
-# "crt0" has to be the first linked object of the final stub.
-# Read crt0.s for more explanations.
-zlib-0088-stub: main.o zlib
-	$(EE_CC) -nostartfiles ./crt0.s -Wl,--defsym,_start_address=0x0088000 -o zlib-0088-stub main.o ./zlib/zlib.a $(EE_LDFLAGS)
+ZLIB_SIGNATURE = 42494c5a
 
-zlib-1a00-stub: main.o zlib
-	$(EE_CC) -nostartfiles ./crt0.s -Wl,--defsym,_start_address=0x1a00000 -o zlib-1a00-stub main.o ./zlib/zlib.a $(EE_LDFLAGS)
 
-main.o: main.c
-	$(EE_CC) $(EE_CPPFLAGS) -c main.c
+SIGNATURE = -Wl,--defsym,_signature=0x$(ZLIB_SIGNATURE)
+zlib-0088-stub: main.o zlib-stub.o zlib
+	$(EE_CC) -nostartfiles ./crt0.s -Wl,--defsym,_start_address=0x0088000 -o zlib-0088-stub main.o zlib-stub.o ./zlib/zlib.a $(EE_LDFLAGS) $(SIGNATURE)
+
+zlib-1a00-stub: main.o zlib-stub.o zlib
+	$(EE_CC) -nostartfiles ./crt0.s -Wl,--defsym,_start_address=0x1a00000 -o zlib-1a00-stub main.o zlib-stub.o ./zlib/zlib.a $(EE_LDFLAGS) $(SIGNATURE)
 
 clean:
-	rm -f main.o $(TARGETS)
+	rm -f *.o $(TARGETS)
 	make -C zlib clean
 
 rebuild: clean all
 
 .PHONY: zlib
+
+%.o : %.c
+	$(EE_CC) $(EE_CFLAGS) $(EE_CPPFLAGS) $(EE_INCS) -c $< -o $@
+
