@@ -4,8 +4,6 @@
 
 	.extern _signature
 
-#include "ucl/n2e.S"
-
 	.text
 
 #
@@ -66,3 +64,5 @@ zero_loop:
 	jr	$s5
 
 	.end _start
+
+#include "ucl/n2e.S"

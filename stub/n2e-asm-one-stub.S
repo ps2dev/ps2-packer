@@ -4,8 +4,6 @@
 
 	.extern _signature
 
-#include "ucl/n2e.S"
-
 	.text
 
 #
@@ -49,3 +47,5 @@ loop:
 	jr	$s2
 
 	.end _start
+
+#include "ucl/n2e.S"
