@@ -1,4 +1,4 @@
-PS2-Packer version 0.4.3
+PS2-Packer version 0.4.4
 ========================
 
 Overview
@@ -58,6 +58,10 @@ Changelog
               fixed a multiple-section critical bug.
 	      fixed a bit the asm stub code.
 	      tagging as 0.4.3
+  2004/12/26: added reload option, and used branches instead of jumps in
+                the asm stubs.
+	      created lite version - see README-lite.txt for informations.
+	      tagging as 0.4.4
 
 
 Todo

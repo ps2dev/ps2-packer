@@ -1,6 +1,6 @@
 /*
  *  PS2-Packer
- *  Copyright (C) 2004 Nicolas "Pixel" Noble
+ *  Copyright (C) 2004-2005 Nicolas "Pixel" Noble
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -23,7 +23,9 @@
 #include <string.h>
 #include <getopt.h>
 #include <stdarg.h>
+#ifndef PS2_PACKER_LITE
 #include "dlopen.h"
+#endif
 
 #ifdef _WIN32
 #define SUFFIX ".dll"
@@ -55,6 +57,8 @@ u32 reload = 0;
 u8 alternative = 0; /* boolean for alternative loading method */
 u32 alignment = 0x10;
 
+int sections;
+
 /*
   This is the pointer in our output elf file.
 */
@@ -62,10 +66,12 @@ u32 data_pointer;
 
 struct option long_options[] = {
     {"help",    0, NULL, 'h'},
-    {"packer",  1, NULL, 'p'},
     {"base",    1, NULL, 'b'},
     {"reload",  1, NULL, 'r'},
+#ifndef PS2_PACKER_LITE
+    {"packer",  1, NULL, 'p'},
     {"stub",    1, NULL, 's'},
+#endif
     {"align",   1, NULL, 'a'},
     {"verbose", 1, NULL, 'v'},
     {0,         0, NULL,  0 },
@@ -90,10 +96,12 @@ void printv(char * fmt, ...) {
     va_end(list);
 }
 
+#ifndef PS2_PACKER_LITE
 typedef int (*pack_section_t)(const u8 * source, u8 ** dest, u32 source_size);
 pack_section_t pack_section;
 typedef u32 (*signature_t)();
 signature_t signature;
+#endif
 
 u8 bigendian = 0;
 u32 ELF_MAGIC = 0x464c457f;
@@ -212,7 +220,7 @@ void sanity_checks() {
 
 void show_banner() {
     printf(
-        "PS2-Packer v" VERSION " (C) 2004 Nicolas \"Pixel\" Noble\n"
+        "PS2-Packer v" VERSION " (C) 2004-2005 Nicolas \"Pixel\" Noble\n"
         "This is free software with ABSOLUTELY NO WARRANTY.\n"
         "\n"
     );
@@ -220,13 +228,19 @@ void show_banner() {
 
 void show_usage() {
     printf(
-	"Usage: ps2-packer [-v] [-a X] [-b X] [-p X] [-s X] [-r X] <in_elf> <out_elf>\n"
+	"Usage: ps2-packer [-v] [-a X] [-b X] "
+#ifndef PS2_PACKER_LITE
+	"[-p X] [-s X] "
+#endif
+	"[-r X] <in_elf> <out_elf>\n"
 	"    -v             verbose mode.\n"
 	"    -b base        sets the loading base of the compressed data. When activated\n"
 	"                     it will activate the alternative packing way.\n"
+#ifndef PS2_PACKER_LITE
         "    -p packer      sets a packer name. n2e by default.\n"
 	"    -s stub        sets another uncruncher stub. stub/n2e-asm-1d00-stub,\n"
 	"                     or stub/n2e-0088-stub when using alternative packing.\n"
+#endif
 	"    -r reload      sets a reload base of the stub. Beware, that will only works\n"
 	"                     with the special asm stubs.\n"
 	"    -a align       sets section alignment. 16 by default. Any value accepted.\n"
@@ -310,8 +324,21 @@ int count_sections(FILE * stub) {
     return r;
 }
 
+#ifdef PS2_PACKER_LITE
+#ifdef __MINGW32__
+#include "mingw-builtin_stub_one.h"
+#include "mingw-builtin_stub.h"
+#endif
+extern u8 _binary_b_stub_one_start[];
+extern u8 _binary_b_stub_start[];
+#endif
+
 /* Loads the stub file in memory, filling up the global variables */
-void load_stub(FILE * stub) {
+void load_stub(
+#ifndef PS2_PACKER_LITE
+    FILE * stub
+#endif
+    ) {
     u8 * loadbuf, * pdata;
     int size;
     int i;
@@ -319,12 +346,20 @@ void load_stub(FILE * stub) {
     elf_pheader_t *eph = 0;
     int loaded = 0;
 
+#ifndef PS2_PACKER_LITE
     fseek(stub, 0, SEEK_END);
     size = ftell(stub);
     fseek(stub, 0, SEEK_SET);
     
     loadbuf = (u8 *) malloc(size);
     fread(loadbuf, 1, size, stub);
+#else
+    if (sections == 1) {
+	loadbuf = _binary_b_stub_one_start;
+    } else {
+	loadbuf = _binary_b_stub_start;
+    }
+#endif
 
     eh = (elf_header_t *)loadbuf;
     SWAP_ELF_HEADER((*eh));
@@ -369,7 +404,9 @@ void load_stub(FILE * stub) {
     remove_section_zeroes(stub_section, &stub_size, &stub_zero);
     printv("Loaded stub: %08X bytes (with %08X zeroes) based at %08X\n", stub_size, stub_zero, stub_base);
 
+#ifndef PS2_PACKER_LITE
     free(loadbuf);
+#endif
 }
 
 /* Write out the basic elf structures, that is, the ELF header,
@@ -605,15 +642,20 @@ int main(int argc, char ** argv) {
     char c;
     u32 base = 0;
     char buffer[BUFSIZ + 1];
+#ifndef PS2_PACKER_LITE
     char * packer_name = 0;
     char * stub_name = 0;
     char * packer_dll = 0;
+#endif
     char * in_name;
     char * out_name;
     void * packer_module = 0;
-    FILE * stub_file, * in, * out;
+#ifndef PS2_PACKER_LITE
+    FILE * stub_file;
+#endif
+    FILE * in, * out;
     u32 size_in, size_out;
-    int sections, use_asm_n2e = 0;
+    int use_asm_n2e = 0;
     char * pwd;
     
     sanity_checks();
@@ -628,7 +670,11 @@ int main(int argc, char ** argv) {
     
     pwd = argv[0];
     
-    while ((c = getopt_long(argc, argv, "b:a:p:s:hvr:", long_options, NULL)) != EOF) {
+    while ((c = getopt_long(argc, argv, "b:a:"
+#ifndef PS2_PACKER_LITE
+	        "p:s:"
+#endif
+		"hvr:", long_options, NULL)) != EOF) {
 	switch (c) {
 	case 'b':
 	    base = strtol(optarg, NULL, 0);
@@ -637,12 +683,14 @@ int main(int argc, char ** argv) {
 	case 'a':
 	    alignment = strtol(optarg, NULL, 0);
 	    break;
+#ifndef PS2_PACKER_LITE
 	case 'p':
 	    packer_name = strdup(optarg);
 	    break;
 	case 's':
 	    stub_name = strdup(optarg);
 	    break;
+#endif
 	case 'r':
 	    reload = strtol(optarg, NULL, 0);
 	    break;
@@ -679,6 +727,7 @@ int main(int argc, char ** argv) {
     
     sections = count_sections(in);
     
+#ifndef PS2_PACKER_LITE
     if (!packer_name) {
 	packer_name = "n2e";
     }
@@ -724,17 +773,24 @@ int main(int argc, char ** argv) {
     }
     
     packer_dll = strdup(buffer);
+#endif
     
     printf("Compressing %s...\n", in_name);
     
     printv("Loading stub file.\n");
+#ifndef PS2_PACKER_LITE
     load_stub(stub_file);
     fclose(stub_file);
+#else
+    load_stub();
+#endif
 
+#ifndef PS2_PACKER_LITE
     printv("Opening packer.\n");
     packer_module = open_module(packer_dll);
     pack_section = get_symbol(packer_module, "pack_section");
     signature = get_symbol(packer_module, "signature");
+#endif
     if (signature() != stub_signature) {
 	printe("Packer's signature and stub's signature are not matching.\n");
     }

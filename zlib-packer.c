@@ -1,6 +1,6 @@
 /*
  *  PS2-Packer
- *  Copyright (C) 2004 Nicolas "Pixel" Noble
+ *  Copyright (C) 2004-2005 Nicolas "Pixel" Noble
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
