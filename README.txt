@@ -20,6 +20,7 @@ Changelog
   2004/08/05: commenting the source, putting it into ps2dev's CVS.
   2004/08/10: removing error messages into zlib, saving a few bytes.
   2004/08/12: adding module capability to the whole, moved code into modules.
+              adding "null" module as an example.
 
 
 History

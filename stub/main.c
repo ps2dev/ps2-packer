@@ -34,8 +34,6 @@ static void fast_memzero(u8 * ptr, u32 size) {
 #define fast_memzero(ptr, size) memset(ptr, 0, size)
 #endif
 
-void Decompress(u8 *dest, u8 *src, u32 dst_size, u32 src_size);
-
 /* Code highly inspired from sjeep's sjcrunch */
 
 /* That variable comes from the crt0.s file. */

@@ -3,7 +3,7 @@
 
 #include <tamtypes.h>
 
-void Decompress(u8 *dest, u8 *src, u32 dst_size, u32 src_size);
+void Decompress(u8 *dest, const u8 *src, u32 dst_size, u32 src_size);
 
 /*
   The data stream, located at the pointer PackedELF is created that way:
