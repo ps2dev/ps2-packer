@@ -84,11 +84,11 @@ n2e-1d00-stub: main.o n2e-stub.o ucl-tag.stamp
 	$(EE_CC) -nostartfiles ./crt0.s -Wl,--defsym,_start_address=0x1d00000 -o n2e-1d00-stub main.o n2e-stub.o ./ucl/ucl.a $(EE_LDFLAGS) $(N2E_SIGNATURE)
 
 
-n2e-asm-1d00-stub: n2e-asm-stub.S
-	$(EE_CC) -nostartfiles -Wl,--defsym,_start_address=0x1d00000 -o n2e-asm-1d00-stub n2e-asm-stub.S ./ucl/n2e.S $(EE_LDFLAGS) $(N2E_SIGNATURE) -DARGS_IN_S
+n2e-asm-1d00-stub: n2e-asm-stub.S ucl/n2e.S
+	$(EE_CC) -nostartfiles -Wl,--defsym,_start_address=0x1d00000 -o n2e-asm-1d00-stub n2e-asm-stub.S $(EE_LDFLAGS) $(N2E_SIGNATURE) -DARGS_IN_S
 
-n2e-asm-one-1d00-stub: n2e-asm-one-stub.S
-	$(EE_CC) -nostartfiles -Wl,--defsym,_start_address=0x1d00000 -o n2e-asm-one-1d00-stub n2e-asm-one-stub.S ./ucl/n2e.S $(EE_LDFLAGS) $(N2E_SIGNATURE) -DARGS_IN_S
+n2e-asm-one-1d00-stub: n2e-asm-one-stub.S ucl/n2e.S
+	$(EE_CC) -nostartfiles -Wl,--defsym,_start_address=0x1d00000 -o n2e-asm-one-1d00-stub n2e-asm-one-stub.S $(EE_LDFLAGS) $(N2E_SIGNATURE) -DARGS_IN_S
 
 
 clean:

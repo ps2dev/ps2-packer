@@ -3,7 +3,8 @@
 .global Signature
 
 	.extern _signature
-	.extern n2e_decompress
+
+#include "ucl/n2e.S"
 
 	.text
 
