@@ -162,10 +162,10 @@ typedef struct {
 }
 
 typedef struct {
-    u32 compressedSize;
     u32 originalSize;
     u32 zeroByteSize;
     u32 virtualAddr;
+    u32 compressedSize;
 } packed_SectionHeader;
 
 #define SWAP_PACKED_SECTION_HEADER(x) { \
@@ -210,10 +210,11 @@ void show_banner() {
 void show_usage() {
     printf(
 	"Usage: ps2-packer [-v] [-a ...] [-b ...] [-p ...] [-s ...] <in_elf> <out_elf>\n"
+	"    -v             verbose mode.\n"
 	"    -b base        sets the loading base of the compressed data. When activated\n"
 	"                     it will activate the alternative packing way.\n"
         "    -p packer      sets a packer name. n2e by default.\n"
-	"    -s stub        sets another uncruncher stub. stub/n2e-1d00-stub by default,\n"
+	"    -s stub        sets another uncruncher stub. stub/n2e-asm-1d00-stub,\n"
 	"                     or stub/n2e-0088-stub when using alternative packing.\n"
 	"    -a align       sets section alignment. 16 by default. Any value accepted.\n"
     );
@@ -226,10 +227,29 @@ u8 ident[] = {
 };
 
 void remove_section_zeroes(u8 * section, u32 * section_size, u32 * zeroes) {
-    while (!section[*section_size - 1]) {
-	(*section_size)--;
-	(*zeroes)++;
+    u32 removed = 0;
+    u32 whole_size;
+    u32 realign = 0;
+    
+    while (!section[*section_size - 1 - removed]) {
+	removed++;
     }
+    
+    whole_size = *section_size + *zeroes;
+    
+    if (whole_size & (alignment - 1)) {
+	realign = whole_size + alignment;
+	realign &= -alignment;
+	realign = whole_size - realign;
+	removed -= realign;
+	if (removed < 0)
+	    removed = 0;
+    }
+    
+    printv("Removing %i zeroes to section...\n", removed);
+    
+    *section_size -= removed;
+    *zeroes += removed;
 }
 
 void realign_data_pointer() {
@@ -237,6 +257,42 @@ void realign_data_pointer() {
 	data_pointer += alignment;
 	data_pointer &= -alignment;
     }
+}
+
+int count_sections(FILE * stub) {
+    u8 * loadbuf;
+    int size;
+    int i;
+    elf_header_t *eh = 0;
+    elf_pheader_t *eph = 0;
+    int r = 0;
+
+    fseek(stub, 0, SEEK_END);
+    size = ftell(stub);
+    fseek(stub, 0, SEEK_SET);
+    
+    loadbuf = (u8 *) malloc(size);
+    fread(loadbuf, 1, size, stub);
+
+    eh = (elf_header_t *)loadbuf;
+    SWAP_ELF_HEADER((*eh));
+    if (*(u32 *)&eh->ident != ELF_MAGIC) {
+        printe("This ain't no ELF file\n");
+    }
+    
+    /* Parsing the interesting program headers */
+    eph = (elf_pheader_t *)(loadbuf + eh->phoff);
+    for (i = 0; i < eh->phnum; i++) {
+	SWAP_ELF_PHEADER(eph[i]);
+        if (eph[i].type != PT_LOAD)
+            continue;
+	
+	r++;
+    }
+    
+    free(loadbuf);
+    
+    return r;
 }
 
 /* Loads the stub file in memory, filling up the global variables */
@@ -372,7 +428,7 @@ void prepare_out(FILE * out, u32 base) {
 
 /* Will produce the second program section of the elf, by packing all the
    program headers of the input file */
-void packing(FILE * out, FILE * in, u32 base) {
+void packing(FILE * out, FILE * in, u32 base, int use_asm_n2e) {
     u8 * loadbuf, * pdata, * packed;
     int size, section_size, packed_size;
     int i;
@@ -380,6 +436,7 @@ void packing(FILE * out, FILE * in, u32 base) {
     elf_pheader_t *eph = 0, weph;
     packed_Header ph;
     packed_SectionHeader psh;
+    char zero = 0;
 
     /* preparing the output program header for that section */
     weph.type = PT_LOAD;
@@ -424,9 +481,15 @@ void packing(FILE * out, FILE * in, u32 base) {
     weph.filesz = 0;
     fseek(out, data_pointer, SEEK_SET);
     SWAP_PACKED_HEADER(ph);
-    if (fwrite(&ph, 1, sizeof(ph), out) != sizeof(ph))
-	printe("Error writing packed header\n");
-    weph.filesz += sizeof(ph);
+    if (use_asm_n2e == 2) {  // only one section
+	if (fwrite(&ph.entryAddr, 1, sizeof(ph.entryAddr), out) != sizeof(ph.entryAddr))
+	    printe("Error writing packed header\n");
+	weph.filesz += sizeof(ph.entryAddr);
+    } else {
+	if (fwrite(&ph, 1, sizeof(ph), out) != sizeof(ph))
+	    printe("Error writing packed header\n");
+	weph.filesz += sizeof(ph);
+    }
 
     /* looping on the program headers to pack them */
     for (i = 0; i < eh->phnum; i++) {
@@ -448,15 +511,23 @@ void packing(FILE * out, FILE * in, u32 base) {
 	printv("Section packed, from %u to %u bytes, ratio = %5.2f%%\n", section_size, packed_size, 100.0 * (section_size - packed_size) / section_size);
 	
 	SWAP_PACKED_SECTION_HEADER(psh);
-	if (fwrite(&psh, 1, sizeof(psh), out) != sizeof(psh))
-	    printe("Error writing packed section header.\n");
-	weph.filesz += sizeof(psh);
+	if (use_asm_n2e == 2) {  // we don't need compressed size
+	    if (fwrite(&psh, 1, 3 * sizeof(u32), out) != 3 * sizeof(u32))
+	        printe("Error writing packed section header.\n");
+	    weph.filesz += 3 * sizeof(u32);
+	} else {
+	    if (fwrite(&psh, 1, sizeof(psh), out) != sizeof(psh))
+	        printe("Error writing packed section header.\n");
+	    weph.filesz += sizeof(psh);
+	}
 	if (fwrite(packed, 1, packed_size, out) != packed_size)
 	    printe("Error writing packed section.\n");
 	weph.filesz += packed_size;
+	while (weph.filesz & 3) {
+	    weph.filesz++;
+	    fwrite(&zero, 1, 1, out);
+	}
 
-	psh.compressedSize = packed_size;
-	
 	free(packed);
     }
     
@@ -466,7 +537,7 @@ void packing(FILE * out, FILE * in, u32 base) {
     	    weph.filesz += alignment;
 	    weph.filesz &= -alignment;
 	}
-	fseek(out, data_pointer, SEEK_SET);
+	fseek(out, data_pointer + weph.filesz, SEEK_SET);
 	base = stub_base - weph.filesz;
 	printv("Final base address: %08X\n", base);
 	SWAP32(base);
@@ -485,7 +556,7 @@ void packing(FILE * out, FILE * in, u32 base) {
     data_pointer += weph.filesz;
     
     printv("All data written, writing program header.\n");
-    weph.memsz = weph.filesz;
+    weph.memsz = weph.filesz + stub_zero;
     
     if (alternative)
 	fseek(out, sizeof(*eh) + sizeof(*eph), SEEK_SET);
@@ -514,6 +585,7 @@ int main(int argc, char ** argv) {
     void * packer_module = 0;
     FILE * stub_file, * in, * out;
     u32 size_in, size_out;
+    int sections, use_asm_n2e = 0;
     
     sanity_checks();
     
@@ -550,36 +622,12 @@ int main(int argc, char ** argv) {
     if (alternative)    
         printv("Using alternative packing method.\n");
 
-    if (!packer_name) {
-	packer_name = "n2e";
-    }
-    
-    if (!stub_name) {
-	if (!base)
-	    snprintf(buffer, BUFSIZ, "stub/%s-1d00-stub", packer_name);
-	else
-	    snprintf(buffer, BUFSIZ, "stub/%s-0088-stub", packer_name);
-	stub_name = strdup(buffer);
-    }
-
-#ifdef _WIN32
-    snprintf(buffer, BUFSIZ, "./%s-packer.dll", packer_name);
-#else
-    snprintf(buffer, BUFSIZ, "./%s-packer.so", packer_name);
-#endif
-
-    packer_dll = strdup(buffer);
-    
     if ((argc - optind) != 2) {
 	printe("%i files specified, I need exactly 2.\n", argc - optind);
     }
     
     in_name = argv[optind++];
     out_name = argv[optind++];
-    
-    if (!(stub_file = fopen(stub_name, "rb"))) {
-	printe("Unable to open stub file %s\n", stub_name);
-    }
     
     if (!(in = fopen(in_name, "rb"))) {
 	printe("Unable to open input file %s\n", in_name);
@@ -588,6 +636,45 @@ int main(int argc, char ** argv) {
     if (!(out = fopen(out_name, "wb"))) {
 	printe("Unable to open output file %s\n", out_name);
     }
+    
+    sections = count_sections(in);
+    
+    if (!packer_name) {
+	packer_name = "n2e";
+    }
+    
+    if (!stub_name) {
+	if (!base) {
+	    if (strcmp(packer_name, "n2e") == 0) {
+		if (sections == 1) {
+		    printf("Using special ucl-nrv2e asm (one section) stub\n");
+	    	    snprintf(buffer, BUFSIZ, "stub/%s-asm-one-1d00-stub", packer_name);
+		    use_asm_n2e = 2;
+		} else {
+		    printf("Using special ucl-nrv2e asm (multiple sections) stub\n");
+	    	    snprintf(buffer, BUFSIZ, "stub/%s-asm-1d00-stub", packer_name);
+		    use_asm_n2e = 1;
+		}
+	    } else {
+	        snprintf(buffer, BUFSIZ, "stub/%s-1d00-stub", packer_name);
+	    }
+	} else {
+	    snprintf(buffer, BUFSIZ, "stub/%s-0088-stub", packer_name);
+	}
+	stub_name = strdup(buffer);
+    }
+
+    if (!(stub_file = fopen(stub_name, "rb"))) {
+	printe("Unable to open stub file %s\n", stub_name);
+    }
+    
+#ifdef _WIN32
+    snprintf(buffer, BUFSIZ, "./%s-packer.dll", packer_name);
+#else
+    snprintf(buffer, BUFSIZ, "./%s-packer.so", packer_name);
+#endif
+
+    packer_dll = strdup(buffer);
     
     printf("Compressing %s...\n", in_name);
     
@@ -607,7 +694,7 @@ int main(int argc, char ** argv) {
     prepare_out(out, base);
     
     printv("Packing.\n");
-    packing(out, in, base);
+    packing(out, in, base, use_asm_n2e);
     
     printv("Done!\n");
     

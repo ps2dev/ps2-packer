@@ -88,7 +88,10 @@ ucl_nrv2e_decompress_8          ( const ucl_bytep src, ucl_uint  src_len,
             const ucl_bytep m_pos;
             m_pos = dst + olen - m_off;
             dst[olen++] = *m_pos++;
-            do dst[olen++] = *m_pos++; while (--m_len > 0);
+            do {
+		dst[olen++] = *m_pos++;
+	    }
+	    while (--m_len > 0);
         }
     }
     *dst_len = olen;

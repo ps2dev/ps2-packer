@@ -1,5 +1,5 @@
-PS2-Packer version 0.3.1
-========================
+PS2-Packer version 0.4
+======================
 
 Overview
 --------
@@ -38,9 +38,16 @@ Changelog
               adding "alternative" elf packing method
 	      changing packer selection method (using prefix)
 	      tagging as 0.3 (ho well...)
-  2004/08/14: fixed an alignment bug, added alignment option.
-              changing ExecPS2 in stubs to a more ps2link-friendly thingy.
+  2004/08/14: fixed some alignments bugs, added alignment option.
+              changing ExecPS2 in stubs to a more ps2link-friendly thingy,
+	        as a special compilation option
 	      added verbose option :p
+	      added n2e.S, 84 instructions ucl-nrv2e uncompression code.
+	      added a special "one section" ucl-nrv2e asm only stub, used when
+	        the input file has only one section (total of 416 bytes).
+	      added a special "multiple sections" ucl-nrv2e asm only stub, used
+	        the input file has only one section, untested.
+	      tagging as 0.4
 
 
 Todo
@@ -60,6 +67,7 @@ Some facts
  78856 - ps2link-embed-n2b.elf
  78536 - ps2link-embed-n2d.elf
  77792 - ps2link-embed-n2e.elf
+ 76768 - ps2link-embed-asm-n2e.elf
 
 444240 - ps2menu.elf
 239064 - ps2menu-lzo.elf
@@ -67,6 +75,7 @@ Some facts
 167228 - ps2menu-n2b.elf
 166044 - ps2menu-n2d.elf
 164124 - ps2menu-n2e.elf
+163088 - ps2menu-asm-n2e.elf
 
 
 History
@@ -86,6 +95,21 @@ it. The only problem is it uses modified version of a lot of GPLed code, so...
 
   This code was inspired by various sources, especially sjcrunch's main.c, and
 sjuncrunch. Some idea from mrbrown too :)
+
+  Beeing a ps2dev.org developper got me banned from ps2ownz.com's website. Thus,
+as a special exception to the GPL, since I can not go on their forums, and react
+and help people about that software, I to NOT give them the autorization to
+mirror these packages on their website, only to link to the homepage of this
+project, that is, http://www.nobis-crew.org/ps2-packer nor are they authorized
+to support their users on their forums on questions about that software.
+
+  If you want to reach me, and find support about ps2-packer, either ask me
+directly, by mail, or by reaching me on IRC (channel #ps2dev on EfNet), or ask
+your questions on ps2dev.org's forums and ps2-scene's forums.
+
+  I actually know they won't give a shit about these restrictions, but I felt
+like proceeding so. If you want real and *legit* ps2 development, go on the
+genuine ps2dev website, that is, http://ps2dev.org
 
 
 How it works
@@ -240,6 +264,8 @@ Thanks and greetings
 --------------------
 
   They go to adresd, blackd_wd, drakonite, emoon, gorim, hiryu, herben, jenova,
-linuzapp oobles, oopo, mrbrown, nagra, neov, nik, t0mb0la, tyranid
+linuzapp, oobles, oopo, mrbrown, nagra, neov, nik, t0mb0la, tyranid
 
 and maybe a few other people I forgot at #ps2dev :)
+
+  Big special thanks to LavosSpawn who helped me reducing the asm stub ;)

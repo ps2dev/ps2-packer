@@ -16,10 +16,10 @@ typedef struct {
 } packed_Header;
 
 typedef struct {
-    u32 compressedSize;
     u32 originalSize;
     u32 zeroByteSize;
     u32 virtualAddr;
+    u32 compressedSize;
 } packed_SectionHeader;
 
 #endif

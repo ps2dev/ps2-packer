@@ -39,7 +39,14 @@ static void fast_memzero(u8 * ptr, u32 size) {
 /* That variable comes from the crt0.s file. */
 extern packed_Header * PackedELF;
 
-typedef int (*main_ptr)(int, char **);
+#ifndef DO_EXECPS2
+struct args {
+    u32 argc;
+    char ** argv;
+};
+
+typedef int (*main_ptr)(struct args);
+#endif
 
 int main(int argc, char ** argv) {
     u8 * compressedData;
@@ -66,6 +73,8 @@ int main(int argc, char ** argv) {
 	if(sectionHeader->zeroByteSize)
     	    fast_memzero((void *)(sectionHeader->virtualAddr + sectionHeader->originalSize), sectionHeader->zeroByteSize);
 	compressedData += sectionHeader->compressedSize;
+	if (((u32) compressedData) & 3)
+	    compressedData = (u32 *) (((u32)compressedData) | 3) + 1;
     }
     
 #ifdef DEBUG
@@ -78,7 +87,12 @@ int main(int argc, char ** argv) {
 #ifdef DO_EXECPS2
     ExecPS2((void *)PackedELF->entryAddr, NULL, argc, argv);
 #else
-    ((main_ptr)PackedELF->entryAddr)(argc, argv);
+    {
+	struct args args;
+	args.argc = argc;
+	args.argv = argv;
+	((main_ptr)PackedELF->entryAddr)(args);
+    }
 #endif
     return 0;
 }
