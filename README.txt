@@ -21,6 +21,8 @@ Changelog
   2004/08/10: removing error messages into zlib, saving a few bytes.
   2004/08/12: adding module capability to the whole, moved code into modules.
               adding "null" module as an example.
+	      adding "lzo" module.
+	      tagging as version 0.3b
 
 
 History

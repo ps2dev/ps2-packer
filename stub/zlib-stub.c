@@ -1,5 +1,6 @@
 /* This is the zlib uncompression stub for ps2-packer */
 
+#include <kernel.h>
 #include "packer-stub.h"
 #include "zlib.h"
 

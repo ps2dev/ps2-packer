@@ -1,9 +1,9 @@
 include $(PS2SDK)/Defs.make
 
-EE_CPPFLAGS = -G0 -I $(PS2SDK)/ee/include -I $(PS2SDK)/common/include -I . -I zlib -D_EE -O3 -Wall
+EE_CPPFLAGS = -G0 -I $(PS2SDK)/ee/include -I $(PS2SDK)/common/include -I . -I zlib -I lzo -D_EE -O3 -Wall
 EE_LDFLAGS = -T ./linkfile -L $(PS2SDK)/ee/lib -lc -lkernel -lc -lsyscall
 
-TARGETS = zlib-1a00-stub zlib-0088-stub null-1a00-stub null-0088-stub
+TARGETS = zlib-1a00-stub zlib-0088-stub null-1a00-stub null-0088-stub lzo-1a00-stub lzo-0088-stub
 
 all: $(TARGETS)
 
@@ -13,8 +13,13 @@ dist: $(TARGETS)
 zlib:
 	make -C zlib
 
+lzo:
+	make -C lzo
+
+
 ZLIB_SIGNATURE = -Wl,--defsym,_signature=0x42494c5a
 NULL_SIGNATURE = -Wl,--defsym,_signature=0x4c4c554e
+LZO_SIGNATURE = -Wl,--defsym,_signature=0x314f5a4c
 
 
 zlib-0088-stub: main.o zlib-stub.o zlib
@@ -30,13 +35,22 @@ null-0088-stub: main.o null-stub.o
 null-1a00-stub: main.o null-stub.o
 	$(EE_CC) -nostartfiles ./crt0.s -Wl,--defsym,_start_address=0x1a00000 -o null-1a00-stub main.o null-stub.o $(EE_LDFLAGS) $(NULL_SIGNATURE)
 
+
+lzo-0088-stub: main.o lzo-stub.o lzo
+	$(EE_CC) -nostartfiles ./crt0.s -Wl,--defsym,_start_address=0x0088000 -o lzo-0088-stub main.o lzo-stub.o ./lzo/lzo.a $(EE_LDFLAGS) $(LZO_SIGNATURE)
+
+lzo-1a00-stub: main.o lzo-stub.o lzo
+	$(EE_CC) -nostartfiles ./crt0.s -Wl,--defsym,_start_address=0x1a00000 -o lzo-1a00-stub main.o lzo-stub.o ./lzo/lzo.a $(EE_LDFLAGS) $(LZO_SIGNATURE)
+
+
 clean:
 	rm -f *.o $(TARGETS)
 	make -C zlib clean
+	make -C lzo clean
 
 rebuild: clean all
 
-.PHONY: zlib
+.PHONY: zlib lzo
 
 %.o : %.c
 	$(EE_CC) $(EE_CFLAGS) $(EE_CPPFLAGS) $(EE_INCS) -c $< -o $@

@@ -391,7 +391,7 @@ void packing(FILE * out, FILE * in, u32 base) {
 	
 	printf("Loaded section: %08X bytes (with %08X zeroes) based at %08X\n", psh.originalSize, psh.zeroByteSize, psh.virtualAddr);
 	
-	packed_size = pack_section(pdata, &packed, section_size);
+	psh.compressedSize = packed_size = pack_section(pdata, &packed, section_size);
 	
 	printf("Section packed, from %u to %u bytes, ratio = %5.2f%%\n", section_size, packed_size, 100.0 * (section_size - packed_size) / section_size);
 	
