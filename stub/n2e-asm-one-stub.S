@@ -38,7 +38,7 @@ _start:
 	.set noreorder
 loop:
 	sb	$0, 0($s4)
-	addiu   $s4, -1
+	addiu   $s4, 1
 	bnez	$s0, loop
 	addiu	$s0, -1
 	
