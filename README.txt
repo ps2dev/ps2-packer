@@ -129,7 +129,7 @@ genuine ps2dev website, that is, http://ps2dev.org
 How it works
 ------------
 
-  Usage: ps2-packer [-v] [-b ...] [-p ...] [-s ...] [-a ...] <in_elf> <out_elf>
+  Usage: ps2-packer [-v] [-b X] [-p X] [-s X] [-a X] [-r X] <in_elf> <out_elf>
   
   Options description:
     -v             verbose mode.
