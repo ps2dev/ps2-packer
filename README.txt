@@ -19,6 +19,7 @@ Changelog
               worked out an endian independant version.
 	      release of version 0.2 :-P (yeah, okay, okay, a bit too fast...)
   2004/08/05: commenting the source, putting it into ps2dev's CVS.
+  2004/08/10: removing error messages into zlib, saving a few bytes.
 
 
 History
