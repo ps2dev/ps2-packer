@@ -1,5 +1,5 @@
-PS2-Packer version 0.3
-======================
+PS2-Packer version 0.3.1
+========================
 
 Overview
 --------
@@ -38,6 +38,9 @@ Changelog
               adding "alternative" elf packing method
 	      changing packer selection method (using prefix)
 	      tagging as 0.3 (ho well...)
+  2004/08/14: fixed an alignment bug, added alignment option.
+              changing ExecPS2 in stubs to a more ps2link-friendly thingy.
+	      added verbose option :p
 
 
 Todo
@@ -88,14 +91,22 @@ sjuncrunch. Some idea from mrbrown too :)
 How it works
 ------------
 
-  Usage line: ps2-packer [-b base] [-p packer] [-s stub] <in_elf> <out_elf>
+  Usage: ps2-packer [-v] [-b ...] [-p ...] [-s ...] [-a ...] <in_elf> <out_elf>
   
   Options description:
+    -v             verbose mode.
     -b base        sets the loading base of the compressed data. When activated
                       it will activate the alternative packing way. See below.
     -p packer      sets a packer name. n2e by default.
     -s stub        sets another uncruncher stub. stub/n2e-1d00-stub by default,
                       or stub/n2e-0088-stub when using alternative packing.
+    -a align       sets section alignment. 16 by default. Any value accepted.
+                      However, here is a list of alignments to know:
+		1 - no alignment, risky, shouldn't work.
+		4 - 32-bits alignment, tricky, should on certain loaders.
+	       16 - 128-bits alignment, normal, should work everywhere.
+	      128 - 128-bytes alignment, dma-safe.
+	     4096 - supra-safe, this is the default alignment of binutils.
 
   Now, you have to understand the mechanisms.
   

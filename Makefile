@@ -1,7 +1,7 @@
 
 LIBZA = /usr/lib/libz.a
 LIBUCLA = /usr/lib/libucl.a
-VERSION = 0.3
+VERSION = 0.3.1
 CC = gcc
 CPPFLAGS = -O3 -Wall -I. -DVERSION=\"$(VERSION)\"
 

@@ -43,23 +43,20 @@ u32 stub_zero;  /* Number of bytes to zero-pad at the end of the section */
 u32 stub_signature; /* packer signature located in the stub */
 
 u8 alternative = 0; /* boolean for alternative loading method */
+u32 alignment = 0x10;
 
 /*
   This is the pointer in our output elf file.
-  The program sections in a PS2 elf seems to be 4096-bytes aligned, so, we
-  start at 4096 ( = 0x1000 )
 */
-#ifdef RESPECT_4096_ALIGN
-u32 data_pointer = 0x1000;
-#else
-u32 data_pointer = 0x80;
-#endif
+u32 data_pointer;
 
 struct option long_options[] = {
     {"help",    0, NULL, 'h'},
     {"packer",  1, NULL, 'p'},
     {"base",    1, NULL, 'b'},
     {"stub",    1, NULL, 's'},
+    {"align",   1, NULL, 'a'},
+    {"verbose", 1, NULL, 'v'},
     {0,         0, NULL,  0 },
 };
 
@@ -69,6 +66,17 @@ void printe(char * fmt, ...) {
     vfprintf(stderr, fmt, list);
     va_end(list);
     exit(-1);
+}
+
+int verbose = 0;
+
+void printv(char * fmt, ...) {
+    va_list list;
+    if (!verbose)
+	return;
+    va_start(list, fmt);
+    vfprintf(stdout, fmt, list);
+    va_end(list);
 }
 
 typedef int (*pack_section_t)(const u8 * source, u8 ** dest, u32 source_size);
@@ -179,21 +187,21 @@ void sanity_checks() {
     }
     
     if (sizeof(u8) != 1) {
-	printf("Error: sizeof(u8) != 1\n");
+	printv("Error: sizeof(u8) != 1\n");
     }
 
     if (sizeof(u16) != 2) {
-	printf("Error: sizeof(u16) != 2\n");
+	printv("Error: sizeof(u16) != 2\n");
     }
 
     if (sizeof(u32) != 4) {
-	printf("Error: sizeof(u32) != 4\n");
+	printv("Error: sizeof(u32) != 4\n");
     }
 }
 
 void show_banner() {
     printf(
-        "PS2-Packer v"VERSION" (C) 2004 Nicolas \"Pixel\" Noble\n"
+        "PS2-Packer v" VERSION " (C) 2004 Nicolas \"Pixel\" Noble\n"
         "This is free software with ABSOLUTELY NO WARRANTY.\n"
         "\n"
     );
@@ -201,7 +209,13 @@ void show_banner() {
 
 void show_usage() {
     printf(
-	"Usage: ps2-packer [-b base] [-p packer] [-s stub] <in_elf> <out_elf>\n"
+	"Usage: ps2-packer [-v] [-a ...] [-b ...] [-p ...] [-s ...] <in_elf> <out_elf>\n"
+	"    -b base        sets the loading base of the compressed data. When activated\n"
+	"                     it will activate the alternative packing way.\n"
+        "    -p packer      sets a packer name. n2e by default.\n"
+	"    -s stub        sets another uncruncher stub. stub/n2e-1d00-stub by default,\n"
+	"                     or stub/n2e-0088-stub when using alternative packing.\n"
+	"    -a align       sets section alignment. 16 by default. Any value accepted.\n"
     );
 }
 
@@ -215,6 +229,13 @@ void remove_section_zeroes(u8 * section, u32 * section_size, u32 * zeroes) {
     while (!section[*section_size - 1]) {
 	(*section_size)--;
 	(*zeroes)++;
+    }
+}
+
+void realign_data_pointer() {
+    if (data_pointer & (alignment - 1)) {
+	data_pointer += alignment;
+	data_pointer &= -alignment;
     }
 }
 
@@ -242,7 +263,7 @@ void load_stub(FILE * stub) {
     
     stub_pc = eh->entry;
     
-    printf("Stub PC = %08X\n", stub_pc);
+    printv("Stub PC = %08X\n", stub_pc);
 
     /* Parsing the interesting program headers */
     eph = (elf_pheader_t *)(loadbuf + eh->phoff);
@@ -272,7 +293,7 @@ void load_stub(FILE * stub) {
     SWAP32(stub_signature);
     
     remove_section_zeroes(stub_section, &stub_size, &stub_zero);
-    printf("Loaded stub: %08X bytes (with %08X zeroes) based at %08X\n", stub_size, stub_zero, stub_base);
+    printv("Loaded stub: %08X bytes (with %08X zeroes) based at %08X\n", stub_size, stub_zero, stub_base);
 
     free(loadbuf);
 }
@@ -310,9 +331,15 @@ void prepare_out(FILE * out, u32 base) {
 	printe("Error writing elf header\n");
     }
     
-    if (!alternative)
+    if (!alternative) {
+        data_pointer = sizeof(eh) + sizeof(eph);
+        realign_data_pointer();
 	return;
+    }
     
+    data_pointer = sizeof(eh) + 2 * sizeof(eph);
+    realign_data_pointer();
+
     eph.type = PT_LOAD;
     eph.flags = PF_R | PF_X;
     eph.offset = data_pointer;
@@ -320,11 +347,7 @@ void prepare_out(FILE * out, u32 base) {
     eph.paddr = stub_base;
     eph.filesz = stub_size;
     eph.memsz = stub_size + stub_zero;
-#ifdef RESPECT_4096_ALIGN
-    eph.align = 0x1000;
-#else
-    eph.align = 0x80;
-#endif
+    eph.align = alignment;
     
     SWAP_ELF_PHEADER(eph);
     
@@ -342,20 +365,9 @@ void prepare_out(FILE * out, u32 base) {
     }
     
     data_pointer += stub_size;
-    printf("Actual pointer in file = %08X\n", data_pointer);
-    /* Align the pointer to a 4096 bytes boundary if necessary */
-#if RESPECT_4096_ALIGN
-    if (data_pointer & 0x0FFF) {
-	data_pointer += 0x1000;
-	data_pointer &= 0xFFFFF000;
-    }
-#else
-    if (data_pointer & 0x07F) {
-	data_pointer += 0x80;
-	data_pointer &= 0xFFFFFF80;
-    }
-#endif
-    printf("Realigned pointer in file = %08X\n", data_pointer);
+    realign_data_pointer();
+    
+    printv("Actual pointer in file = %08X\n", data_pointer);
 }
 
 /* Will produce the second program section of the elf, by packing all the
@@ -379,11 +391,7 @@ void packing(FILE * out, FILE * in, u32 base) {
         weph.vaddr = base;
         weph.paddr = base;
     }
-#ifdef RESPECT_4096_ALIGN
-    weph.align = 0x1000;
-#else
-    weph.align = 0x80;
-#endif
+    weph.align = alignment;
 
     fseek(in, 0, SEEK_END);
     size = ftell(in);
@@ -401,7 +409,7 @@ void packing(FILE * out, FILE * in, u32 base) {
     ph.entryAddr = eh->entry;
     ph.numSections = 0;
     
-    printf("ELF PC = %08X\n", ph.entryAddr);
+    printv("ELF PC = %08X\n", ph.entryAddr);
 
     eph = (elf_pheader_t *)(loadbuf + eh->phoff);
     
@@ -433,11 +441,11 @@ void packing(FILE * out, FILE * in, u32 base) {
 	psh.zeroByteSize = eph[i].memsz - eph[i].filesz;
 	
 	remove_section_zeroes(pdata, &section_size, &psh.zeroByteSize);
-	printf("Loaded section: %08X bytes (with %08X zeroes) based at %08X\n", psh.originalSize, psh.zeroByteSize, psh.virtualAddr);
+	printv("Loaded section: %08X bytes (with %08X zeroes) based at %08X\n", psh.originalSize, psh.zeroByteSize, psh.virtualAddr);
 	
 	psh.compressedSize = packed_size = pack_section(pdata, &packed, section_size);
 	
-	printf("Section packed, from %u to %u bytes, ratio = %5.2f%%\n", section_size, packed_size, 100.0 * (section_size - packed_size) / section_size);
+	printv("Section packed, from %u to %u bytes, ratio = %5.2f%%\n", section_size, packed_size, 100.0 * (section_size - packed_size) / section_size);
 	
 	SWAP_PACKED_SECTION_HEADER(psh);
 	if (fwrite(&psh, 1, sizeof(psh), out) != sizeof(psh))
@@ -453,21 +461,20 @@ void packing(FILE * out, FILE * in, u32 base) {
     }
     
     if (!alternative) {
-	/* Padd data so they are a multiple of 4. */
-	if (weph.filesz & 0x3) {
-	    weph.filesz += 4;
-	    weph.filesz &= 0xfffffffc;
+	/* Padd data so they are a multiple of alignment. */
+	if (weph.filesz & (alignment - 1)) {
+    	    weph.filesz += alignment;
+	    weph.filesz &= -alignment;
 	}
-	data_pointer += weph.filesz;
 	fseek(out, data_pointer, SEEK_SET);
 	base = stub_base - weph.filesz;
-	printf("Final base address: %08X\n", base);
+	printv("Final base address: %08X\n", base);
 	SWAP32(base);
         weph.vaddr = base;
         weph.paddr = base;
 	stub_data[1] = base;
     
-	printf("Writing stub.\n");
+	printv("Writing stub.\n");
 
 	if (fwrite(stub_section, 1, stub_size, out) != stub_size) {
 	    printe("Error writing stub\n");
@@ -475,8 +482,9 @@ void packing(FILE * out, FILE * in, u32 base) {
 	
 	weph.filesz += stub_size;	
     }
+    data_pointer += weph.filesz;
     
-    printf("All data written, writing program header.\n");
+    printv("All data written, writing program header.\n");
     weph.memsz = weph.filesz;
     
     if (alternative)
@@ -501,25 +509,33 @@ int main(int argc, char ** argv) {
     char * packer_name = 0;
     char * stub_name = 0;
     char * packer_dll = 0;
+    char * in_name;
+    char * out_name;
     void * packer_module = 0;
     FILE * stub_file, * in, * out;
+    u32 size_in, size_out;
     
     sanity_checks();
     
     show_banner();
     
-    while ((c = getopt_long(argc, argv, "b:p:s:h", long_options, NULL)) != EOF) {
+    while ((c = getopt_long(argc, argv, "b:a:p:s:hv", long_options, NULL)) != EOF) {
 	switch (c) {
 	case 'b':
 	    base = strtol(optarg, NULL, 0);
 	    alternative = 1;
-	    printf("Using alternative packing method.\n");
+	    break;
+	case 'a':
+	    alignment = strtol(optarg, NULL, 0);
 	    break;
 	case 'p':
 	    packer_name = strdup(optarg);
 	    break;
 	case 's':
 	    stub_name = strdup(optarg);
+	    break;
+	case 'v':
+	    verbose = 1;
 	    break;
 	case 'h':
 	    show_usage();
@@ -530,7 +546,10 @@ int main(int argc, char ** argv) {
 	    exit(-1);
 	}
     }
-    
+
+    if (alternative)    
+        printv("Using alternative packing method.\n");
+
     if (!packer_name) {
 	packer_name = "n2e";
     }
@@ -555,23 +574,28 @@ int main(int argc, char ** argv) {
 	printe("%i files specified, I need exactly 2.\n", argc - optind);
     }
     
+    in_name = argv[optind++];
+    out_name = argv[optind++];
+    
     if (!(stub_file = fopen(stub_name, "rb"))) {
 	printe("Unable to open stub file %s\n", stub_name);
     }
     
-    if (!(in = fopen(argv[optind++], "rb"))) {
-	printe("Unable to open input file %s\n", argv[optind - 1]);
+    if (!(in = fopen(in_name, "rb"))) {
+	printe("Unable to open input file %s\n", in_name);
     }
     
-    if (!(out = fopen(argv[optind++], "wb"))) {
-	printe("Unable to open output file %s\n", argv[optind - 1]);
+    if (!(out = fopen(out_name, "wb"))) {
+	printe("Unable to open output file %s\n", out_name);
     }
     
-    printf("Loading stub file.\n");
+    printf("Compressing %s...\n", in_name);
+    
+    printv("Loading stub file.\n");
     load_stub(stub_file);
     fclose(stub_file);
 
-    printf("Opening packer.\n");
+    printv("Opening packer.\n");
     packer_module = open_module(packer_dll);
     pack_section = get_symbol(packer_module, "pack_section");
     signature = get_symbol(packer_module, "signature");
@@ -579,13 +603,19 @@ int main(int argc, char ** argv) {
 	printe("Packer's signature and stub's signature are not matching.\n");
     }
     
-    printf("Preparing output elf file.\n");
+    printv("Preparing output elf file.\n");
     prepare_out(out, base);
     
-    printf("Packing.\n");
+    printv("Packing.\n");
     packing(out, in, base);
     
-    printf("Done!\n");
+    printv("Done!\n");
+    
+    fseek(in, 0, SEEK_END);
+    size_in = ftell(in);
+    size_out = data_pointer;
+    
+    printf("File compressed, from %i to %i bytes, ratio = %5.2f%%\n", size_in, size_out, 100.0 * (size_in - size_out) / size_in);
     
     fclose(out);
     fclose(in);
