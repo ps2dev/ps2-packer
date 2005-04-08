@@ -12,6 +12,7 @@ lzo-1d00-stub lzo-0088-stub \
 n2b-1d00-stub n2b-0088-stub \
 n2d-1d00-stub n2d-0088-stub \
 n2e-1d00-stub n2e-0088-stub \
+n2e-kmode-1d00-stub n2e-kmode-0088-stub \
 n2e-asm-1d00-stub n2e-asm-one-1d00-stub
 
 all: $(TARGETS)
@@ -82,6 +83,13 @@ n2e-0088-stub: main.o n2e-stub.o ucl-tag.stamp
 
 n2e-1d00-stub: main.o n2e-stub.o ucl-tag.stamp
 	$(EE_CC) -nostartfiles ./crt0.s -Wl,--defsym,_start_address=0x1d00000 -o n2e-1d00-stub main.o n2e-stub.o ./ucl/ucl.a $(EE_LDFLAGS) $(N2E_SIGNATURE)
+
+
+n2e-kmode-0088-stub: main-kmode.o n2e-stub.o ucl-tag.stamp
+	$(EE_CC) -nostartfiles ./crt0.s -Wl,--defsym,_start_address=0x0088000 -o n2e-kmode-0088-stub main-kmode.o n2e-stub.o ./ucl/ucl.a $(EE_LDFLAGS) $(N2E_SIGNATURE)
+
+n2e-kmode-1d00-stub: main-kmode.o n2e-stub.o ucl-tag.stamp
+	$(EE_CC) -nostartfiles ./crt0.s -Wl,--defsym,_start_address=0x1d00000 -o n2e-kmode-1d00-stub main-kmode.o n2e-stub.o ./ucl/ucl.a $(EE_LDFLAGS) $(N2E_SIGNATURE)
 
 
 n2e-asm-1d00-stub: n2e-asm-stub.S ucl/n2e.S

@@ -751,12 +751,13 @@ int main(int argc, char ** argv) {
 	    snprintf(buffer, BUFSIZ, "stub/%s-0088-stub", packer_name);
 	}
 	stub_name = strdup(buffer);
-	if (!file_exists(stub_name)) {
-	    snprintf(buffer, BUFSIZ, PREFIX "/share/ps2-packer/%s", stub_name);
-	    if (!file_exists(buffer)) {
-		snprintf(buffer, BUFSIZ, "%s/%s", pwd, stub_name);
-	    }
-	}
+    }
+
+    if (!file_exists(stub_name)) {
+        snprintf(buffer, BUFSIZ, PREFIX "/share/ps2-packer/%s", stub_name);
+	if (!file_exists(buffer)) {
+    	    snprintf(buffer, BUFSIZ, "%s/%s", pwd, stub_name);
+        }
 	free(stub_name);
 	stub_name = strdup(buffer);
     }

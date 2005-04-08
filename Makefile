@@ -1,4 +1,4 @@
-PREFIX = /usr/local/ps2dev/ps2sdk
+PREFIX = $(PS2DEV)
 
 MAKE = make
 SUBMAKE = MAKE=$(MAKE) $(MAKE) -C
