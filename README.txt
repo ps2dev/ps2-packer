@@ -66,6 +66,8 @@ Changelog
   2005/03/05: added FlushCache(0); FlushCache(2); to be sure...
   2005/04/06: added n2e-kmode stub, and changed search path a bit.
   2005/04/10: fixed a stub loading bug reported by TyRaNiD.
+              added more -kmode stubs.
+	      tagging as 0.4.5
 
 
 Todo

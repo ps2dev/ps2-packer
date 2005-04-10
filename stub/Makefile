@@ -8,9 +8,13 @@ EE_LDFLAGS = -T ./linkfile -L $(PS2SDK)/ee/lib -lc -lkernel -lc -lsyscall
 TARGETS = \
 zlib-1d00-stub zlib-0088-stub \
 null-1d00-stub null-0088-stub \
+null-kmode-1d00-stub null-kmode-0088-stub \
 lzo-1d00-stub lzo-0088-stub \
+lzo-kmode-1d00-stub lzo-kmode-0088-stub \
 n2b-1d00-stub n2b-0088-stub \
+n2b-kmode-1d00-stub n2b-kmode-0088-stub \
 n2d-1d00-stub n2d-0088-stub \
+n2d-kmode-1d00-stub n2d-kmode-0088-stub \
 n2e-1d00-stub n2e-0088-stub \
 n2e-kmode-1d00-stub n2e-kmode-0088-stub \
 n2e-asm-1d00-stub n2e-asm-one-1d00-stub
@@ -57,11 +61,25 @@ null-1d00-stub: main.o null-stub.o
 	$(EE_CC) -nostartfiles ./crt0.s -Wl,--defsym,_start_address=0x1d00000 -o null-1d00-stub main.o null-stub.o $(EE_LDFLAGS) $(NULL_SIGNATURE)
 
 
+null-kmode-0088-stub: main-kmode.o null-stub.o
+	$(EE_CC) -nostartfiles ./crt0.s -Wl,--defsym,_start_address=0x0088000 -o null-kmode-0088-stub main-kmode.o null-stub.o $(EE_LDFLAGS) $(NULL_SIGNATURE)
+
+null-kmode-1d00-stub: main-kmode.o null-stub.o
+	$(EE_CC) -nostartfiles ./crt0.s -Wl,--defsym,_start_address=0x1d00000 -o null-kmode-1d00-stub main-kmode.o null-stub.o $(EE_LDFLAGS) $(NULL_SIGNATURE)
+
+
 lzo-0088-stub: main.o lzo-stub.o lzo-tag.stamp
 	$(EE_CC) -nostartfiles ./crt0.s -Wl,--defsym,_start_address=0x0088000 -o lzo-0088-stub main.o lzo-stub.o ./lzo/lzo.a $(EE_LDFLAGS) $(LZO_SIGNATURE)
 
 lzo-1d00-stub: main.o lzo-stub.o lzo-tag.stamp
 	$(EE_CC) -nostartfiles ./crt0.s -Wl,--defsym,_start_address=0x1d00000 -o lzo-1d00-stub main.o lzo-stub.o ./lzo/lzo.a $(EE_LDFLAGS) $(LZO_SIGNATURE)
+
+
+lzo-kmode-0088-stub: main-kmode.o lzo-stub.o lzo-tag.stamp
+	$(EE_CC) -nostartfiles ./crt0.s -Wl,--defsym,_start_address=0x0088000 -o lzo-kmode-0088-stub main-kmode.o lzo-stub.o ./lzo/lzo.a $(EE_LDFLAGS) $(LZO_SIGNATURE)
+
+lzo-kmode-1d00-stub: main-kmode.o lzo-stub.o lzo-tag.stamp
+	$(EE_CC) -nostartfiles ./crt0.s -Wl,--defsym,_start_address=0x1d00000 -o lzo-kmode-1d00-stub main-kmode.o lzo-stub.o ./lzo/lzo.a $(EE_LDFLAGS) $(LZO_SIGNATURE)
 
 
 n2b-0088-stub: main.o n2b-stub.o ucl-tag.stamp
@@ -71,11 +89,25 @@ n2b-1d00-stub: main.o n2b-stub.o ucl-tag.stamp
 	$(EE_CC) -nostartfiles ./crt0.s -Wl,--defsym,_start_address=0x1d00000 -o n2b-1d00-stub main.o n2b-stub.o ./ucl/ucl.a $(EE_LDFLAGS) $(N2B_SIGNATURE)
 
 
+n2b-kmode-0088-stub: main-kmode.o n2b-stub.o ucl-tag.stamp
+	$(EE_CC) -nostartfiles ./crt0.s -Wl,--defsym,_start_address=0x0088000 -o n2b-kmode-0088-stub main-kmode.o n2b-stub.o ./ucl/ucl.a $(EE_LDFLAGS) $(N2B_SIGNATURE)
+
+n2b-kmode-1d00-stub: main-kmode.o n2b-stub.o ucl-tag.stamp
+	$(EE_CC) -nostartfiles ./crt0.s -Wl,--defsym,_start_address=0x1d00000 -o n2b-kmode-1d00-stub main-kmode.o n2b-stub.o ./ucl/ucl.a $(EE_LDFLAGS) $(N2B_SIGNATURE)
+
+
 n2d-0088-stub: main.o n2d-stub.o ucl-tag.stamp
 	$(EE_CC) -nostartfiles ./crt0.s -Wl,--defsym,_start_address=0x0088000 -o n2d-0088-stub main.o n2d-stub.o ./ucl/ucl.a $(EE_LDFLAGS) $(N2D_SIGNATURE)
 
 n2d-1d00-stub: main.o n2d-stub.o ucl-tag.stamp
 	$(EE_CC) -nostartfiles ./crt0.s -Wl,--defsym,_start_address=0x1d00000 -o n2d-1d00-stub main.o n2d-stub.o ./ucl/ucl.a $(EE_LDFLAGS) $(N2D_SIGNATURE)
+
+
+n2d-kmode-0088-stub: main-kmode.o n2d-stub.o ucl-tag.stamp
+	$(EE_CC) -nostartfiles ./crt0.s -Wl,--defsym,_start_address=0x0088000 -o n2d-kmode-0088-stub main-kmode.o n2d-stub.o ./ucl/ucl.a $(EE_LDFLAGS) $(N2D_SIGNATURE)
+
+n2d-kmode-1d00-stub: main-kmode.o n2d-stub.o ucl-tag.stamp
+	$(EE_CC) -nostartfiles ./crt0.s -Wl,--defsym,_start_address=0x1d00000 -o n2d-kmode-1d00-stub main-kmode.o n2d-stub.o ./ucl/ucl.a $(EE_LDFLAGS) $(N2D_SIGNATURE)
 
 
 n2e-0088-stub: main.o n2e-stub.o ucl-tag.stamp

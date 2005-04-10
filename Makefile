@@ -6,7 +6,7 @@ SHELL = /bin/sh
 SYSTEM = $(shell uname)
 LIBZA = /usr/lib/libz.a
 LIBUCLA = /usr/lib/libucl.a
-VERSION = 0.4.4
+VERSION = 0.4.5
 CC = gcc
 BIN2O = ld -r -b binary
 CPPFLAGS = -O3 -Wall -I. -DVERSION=\"$(VERSION)\" -DPREFIX=\"$(PREFIX)\"
@@ -195,7 +195,7 @@ dist: all mingw COPYING stubs-dist README.txt ps2-packer.c $(addsuffix .c,$(PACK
 redist: clean mingw-clean dist
 
 release: redist
-	rm -f /var/www/ps2-packer/*
+	rm -f /var/www/softwares/ps2-packer/*
 	cp *.gz *.zip COPYING README.txt README-lite.txt /var/www/ps2-packer
 
 .PHONY: mingw-zlib mingw-ucl
