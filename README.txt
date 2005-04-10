@@ -65,6 +65,7 @@ Changelog
   2004/12/27: lkz reported a bug in the lite version only - fixed.
   2005/03/05: added FlushCache(0); FlushCache(2); to be sure...
   2005/04/06: added n2e-kmode stub, and changed search path a bit.
+  2005/04/10: fixed a stub loading bug reported by TyRaNiD.
 
 
 Todo
