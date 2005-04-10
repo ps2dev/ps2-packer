@@ -190,12 +190,12 @@ dist: all mingw COPYING stubs-dist README.txt ps2-packer.c $(addsuffix .c,$(PACK
 	zip -9 ps2-packer-$(VERSION)-win32.zip ps2-packer.exe $(addsuffix .dll,$(PACKERS)) COPYING stub/*stub README.txt
 	tar cvfz ps2-packer-lite-$(VERSION)-linux.tar.gz ps2-packer-lite COPYING README.txt README-lite.txt
 	zip -9 ps2-packer-lite-$(VERSION)-win32.zip ps2-packer-lite.exe COPYING README.txt README-lite.txt
-	tar cvfz ps2-packer-$(VERSION)-src.tar.gz *.{c,h} Makefile COPYING stub/{Makefile,crt0.s,linkfile,*.{c,h,S}} stub/ucl/*.S stub/{zlib,lzo,ucl}/{Makefile,*.{c,h}} README.txt README-lite.txt
+	tar cvfz ps2-packer-$(VERSION)-src.tar.gz *.{c,h} Makefile COPYING stub/{Makefile,crt0.s,dummy.s,linkfile,*.{c,h,S}} stub/ucl/*.S stub/{zlib,lzo,ucl}/{Makefile,*.{c,h}} README.txt README-lite.txt
 
 redist: clean mingw-clean dist
 
 release: redist
 	rm -f /var/www/softwares/ps2-packer/*
-	cp *.gz *.zip COPYING README.txt README-lite.txt /var/www/ps2-packer
+	cp *.gz *.zip COPYING README.txt README-lite.txt /var/www/softwares/ps2-packer
 
 .PHONY: mingw-zlib mingw-ucl

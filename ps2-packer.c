@@ -401,7 +401,7 @@ void load_stub(
     stub_signature = stub_data[0];
     SWAP32(stub_signature);
     
-//    remove_section_zeroes(stub_section, &stub_size, &stub_zero);
+    remove_section_zeroes(stub_section, &stub_size, &stub_zero);
     printv("Loaded stub: %08X bytes (with %08X zeroes) based at %08X\n", stub_size, stub_zero, stub_base);
 
 #ifndef PS2_PACKER_LITE
