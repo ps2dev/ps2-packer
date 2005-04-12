@@ -60,22 +60,22 @@ stubs-tag.stamp:
 packers: $(addsuffix $(SHAREDSUFFIX),$(PACKERS))
 
 zlib-packer$(SHAREDSUFFIX): zlib-packer.c
-	$(CC) -fPIC $(CPPFLAGS) zlib-packer.c $(SHARED) -o zlib-packer.so $(LIBZA)
+	$(CC) -fPIC $(CPPFLAGS) zlib-packer.c $(SHARED) -o zlib-packer$(SHAREDSUFFIX) $(LIBZA)
 
 lzo-packer$(SHAREDSUFFIX): lzo-packer.c minilzo.c
-	$(CC) -fPIC $(CPPFLAGS) lzo-packer.c minilzo.c $(SHARED) -o lzo-packer.so
+	$(CC) -fPIC $(CPPFLAGS) lzo-packer.c minilzo.c $(SHARED) -o lzo-packer$(SHAREDSUFFIX)
 
 n2b-packer$(SHAREDSUFFIX): n2b-packer.c
-	$(CC) -fPIC $(CPPFLAGS) n2b-packer.c $(SHARED) -o n2b-packer.so $(LIBUCLA)
+	$(CC) -fPIC $(CPPFLAGS) n2b-packer.c $(SHARED) -o n2b-packer$(SHAREDSUFFIX) $(LIBUCLA)
 
 n2d-packer$(SHAREDSUFFIX): n2d-packer.c
-	$(CC) -fPIC $(CPPFLAGS) n2d-packer.c $(SHARED) -o n2d-packer.so $(LIBUCLA)
+	$(CC) -fPIC $(CPPFLAGS) n2d-packer.c $(SHARED) -o n2d-packer$(SHAREDSUFFIX) $(LIBUCLA)
 
 n2e-packer$(SHAREDSUFFIX): n2e-packer.c
-	$(CC) -fPIC $(CPPFLAGS) n2e-packer.c $(SHARED) -o n2e-packer.so $(LIBUCLA)
+	$(CC) -fPIC $(CPPFLAGS) n2e-packer.c $(SHARED) -o n2e-packer$(SHAREDSUFFIX) $(LIBUCLA)
 
 null-packer$(SHAREDSUFFIX): null-packer.c
-	$(CC) -fPIC $(CPPFLAGS) null-packer.c $(SHARED) -o null-packer.so
+	$(CC) -fPIC $(CPPFLAGS) null-packer.c $(SHARED) -o null-packer$(SHAREDSUFFIX)
 
 
 #
@@ -85,7 +85,7 @@ stubs-dist:
 	$(SUBMAKE) stub dist
 
 clean:
-	rm -f ps2-packer ps2-packer-lite ps2-packer.exe ps2-packer-lite.exe *.zip *.gz *.dll *.so *.o mingw-builtin_stub_one.h mingw-builtin_stub.h
+	rm -f ps2-packer ps2-packer-lite ps2-packer.exe ps2-packer-lite.exe *.zip *.gz *.dll *$(SHAREDSUFFIX) *.o mingw-builtin_stub_one.h mingw-builtin_stub.h
 	$(SUBMAKE) stub clean
 	rm -f stubs-tag.stamp
 
@@ -183,10 +183,10 @@ null-packer.dll: null-packer.c dllinit.o
 	rm tmp.base tmp.exp tmp.def null-packer.o
 
 dist: all mingw COPYING stubs-dist README.txt ps2-packer.c $(addsuffix .c,$(PACKERS))
-	strip ps2-packer ps2-packer-lite $(addsuffix .so,$(PACKERS))
+	strip ps2-packer ps2-packer-lite $(addsuffix $(SHAREDSUFFIX),$(PACKERS))
 	i586-mingw32msvc-strip ps2-packer.exe ps2-packer-lite.exe $(addsuffix .dll,$(PACKERS))
 	upx-nrv --best ps2-packer ps2-packer-lite ps2-packer.exe ps2-packer-lite.exe $(addsuffix .dll,$(PACKERS))
-	tar cvfz ps2-packer-$(VERSION)-linux.tar.gz ps2-packer $(addsuffix .so,$(PACKERS)) COPYING stub/*stub README.txt
+	tar cvfz ps2-packer-$(VERSION)-linux.tar.gz ps2-packer $(addsuffix $(SHAREDSUFFIX),$(PACKERS)) COPYING stub/*stub README.txt
 	zip -9 ps2-packer-$(VERSION)-win32.zip ps2-packer.exe $(addsuffix .dll,$(PACKERS)) COPYING stub/*stub README.txt
 	tar cvfz ps2-packer-lite-$(VERSION)-linux.tar.gz ps2-packer-lite COPYING README.txt README-lite.txt
 	zip -9 ps2-packer-lite-$(VERSION)-win32.zip ps2-packer-lite.exe COPYING README.txt README-lite.txt
