@@ -142,7 +142,7 @@ lzo-packer.dll: lzo-packer.c dllinit.o
 	echo EXPORTS > tmp.def
 	i586-mingw32msvc-nm lzo-packer.o dllinit.o | grep '^........ [T] _' | sed 's/[^_]*_//' >> tmp.def
 	i586-mingw32msvc-ld --base-file tmp.base --dll -o lzo-packer.dll lzo-packer.o minilzo.o dllinit.o -e _DllMain@12 -lmingw32 -lkernel32 -lmoldname -lmsvcrt $(MINGW_LIBGCC)
-	i586-mingw32msvc-dlltool --dllname zlib-packer.dll --def tmp.def --base-file tmp.base --output-exp tmp.exp
+	i586-mingw32msvc-dlltool --dllname lzo-packer.dll --def tmp.def --base-file tmp.base --output-exp tmp.exp
 	i586-mingw32msvc-ld --base-file tmp.base tmp.exp --dll -o lzo-packer.dll lzo-packer.o minilzo.o dllinit.o -e _DllMain@12 -lmingw32 -lkernel32 -lmoldname -lmsvcrt $(MINGW_LIBGCC)
 	rm tmp.base tmp.exp tmp.def lzo-packer.o minilzo.o
 
