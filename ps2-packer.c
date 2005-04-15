@@ -595,9 +595,9 @@ void packing(FILE * out, FILE * in, u32 base, int use_asm_n2e) {
 	fseek(out, data_pointer + weph.filesz, SEEK_SET);
 	base = stub_base - weph.filesz;
 	printv("Final base address: %08X\n", base);
-	SWAP32(base);
         weph.vaddr = base;
         weph.paddr = base;
+	SWAP32(base);
 	stub_data[1] = base;
     
 	printv("Writing stub.\n");
