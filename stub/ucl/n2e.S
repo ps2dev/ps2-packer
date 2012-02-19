@@ -150,6 +150,7 @@ copy_loop:
 getbit:
     and		$t1, bb, ff0000
     bnez	$t1, bb_okay
+    nop
 
     lbu		$t1, 0(source)
     addiu	source, 1
