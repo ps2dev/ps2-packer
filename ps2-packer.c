@@ -23,6 +23,7 @@
 #include <string.h>
 #include <getopt.h>
 #include <stdarg.h>
+#include "common.h"
 #ifndef PS2_PACKER_LITE
 #include "dlopen.h"
 #endif
@@ -34,10 +35,6 @@
 #else
 #define SUFFIX ".so"
 #endif
-
-typedef unsigned long int u32;
-typedef unsigned short int u16;
-typedef unsigned char u8;
 
 #ifdef _WIN32
 #define snprintf(buffer, size, args...) sprintf(buffer, args)
