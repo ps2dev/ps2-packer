@@ -19,10 +19,7 @@
 
 #include <stdlib.h>
 #include <string.h>
-
-typedef unsigned char u8;
-typedef unsigned short int u16;
-typedef unsigned long int u32;
+#include "common.h"
 
 /* We don't have to pack anything. However, we have to return an malloc()ed
    piece of memory. */

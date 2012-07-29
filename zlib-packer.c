@@ -21,10 +21,7 @@
 #include <stdlib.h>
 #include <stdarg.h>
 #include <zlib.h>
-
-typedef unsigned char u8;
-typedef unsigned short int u16;
-typedef unsigned long int u32;
+#include "common.h"
 
 static void printe(char * fmt, ...) {
     va_list list;
