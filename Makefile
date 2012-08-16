@@ -4,8 +4,8 @@ MAKE = make
 SUBMAKE = MAKE=$(MAKE) $(MAKE) -C
 SHELL = /bin/sh
 SYSTEM = $(shell uname)
-LIBZA = /usr/lib/libz.a
-LIBUCLA = /usr/lib/libucl.a
+LIBZA = -lz
+LIBUCLA = -lucl
 VERSION = 0.4.5
 CC = gcc
 BIN2O = ld -r -b binary
