@@ -225,11 +225,12 @@ void show_banner() {
 
 void show_usage() {
     printf(
-	"Usage: ps2-packer [-v] [-a X] [-b X] "
+	"Usage: ps2-packer [-h] [-v] [-a X] [-b X] "
 #ifndef PS2_PACKER_LITE
 	"[-p X] [-s X] "
 #endif
 	"[-r X] <in_elf> <out_elf>\n"
+	"    -h             show this help.\n"
 	"    -v             verbose mode.\n"
 	"    -b base        sets the loading base of the compressed data. When activated\n"
 	"                     it will activate the alternative packing way.\n"
@@ -338,13 +339,13 @@ void load_stub(
 #endif
     ) {
     u8 * loadbuf, * pdata;
-    int size;
     int i;
     elf_header_t *eh = 0;
     elf_pheader_t *eph = 0;
     int loaded = 0;
 
 #ifndef PS2_PACKER_LITE
+    int size;
     fseek(stub, 0, SEEK_END);
     size = ftell(stub);
     fseek(stub, 0, SEEK_SET);
@@ -704,7 +705,7 @@ int main(int argc, char ** argv) {
 	    show_usage();
 	    exit(0);
 	default:
-	    printe("Unknown option %c\n", c);
+	    printf("Unknown option %c\n\n", c);
 	    show_usage();
 	    exit(-1);
 	}
@@ -714,7 +715,8 @@ int main(int argc, char ** argv) {
         printv("Using alternative packing method.\n");
 
     if ((argc - optind) != 2) {
-	printe("%i files specified, I need exactly 2.\n", argc - optind);
+	printf("%i files specified, I need exactly 2.\n\n", argc - optind);
+	show_usage();
     }
 
     in_name = argv[optind++];

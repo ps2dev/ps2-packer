@@ -1,4 +1,4 @@
-PS2-Packer version 0.4.4
+PS2-Packer version 0.4.5
 ========================
 
 Overview

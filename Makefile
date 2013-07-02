@@ -99,7 +99,8 @@ rebuild: clean all
 
 mingw: ps2-packer.exe ps2-packer-lite.exe mingw-packers
 
-MINGW_LIBGCC = /usr/lib/gcc-lib/i586-mingw32msvc/2.95.3-7/libgcc.a
+MINGW_LIBGCC = -lgcc
+#/usr/lib/gcc-lib/i586-mingw32msvc/2.95.3-7/libgcc.a
 
 ps2-packer.exe: ps2-packer.c dlopen.c
 	i586-mingw32msvc-gcc $(CPPFLAGS) ps2-packer.c dlopen.c -o ps2-packer.exe -I mingw-getopt mingw-getopt/getopt*.c
