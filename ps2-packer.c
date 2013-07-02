@@ -484,9 +484,9 @@ void prepare_out(FILE * out, u32 base) {
 /* Will produce the second program section of the elf, by packing all the
    program headers of the input file */
 void packing(FILE * out, FILE * in, u32 base, int use_asm_n2e) {
-    u8 * loadbuf, * pdata, * packed;
-    int size, packed_size;
-    uint32_t section_size;
+    u8 * loadbuf, * pdata, * packed = 0;
+    int size, packed_size = 0;
+    u32 section_size;
     int i;
     elf_header_t *eh = 0;
     elf_pheader_t *eph = 0, weph;
@@ -644,16 +644,16 @@ int file_exists(const char * fname) {
 int main(int argc, char ** argv) {
     char c;
     u32 base = 0;
-    char buffer[BUFSIZ + 1];
 #ifndef PS2_PACKER_LITE
+    char buffer[BUFSIZ + 1];
     char * packer_name = 0;
     char * stub_name = 0;
     char * packer_dll = 0;
 #endif
     char * in_name;
     char * out_name;
-    void * packer_module = 0;
 #ifndef PS2_PACKER_LITE
+    void * packer_module = 0;
     FILE * stub_file;
 #endif
     FILE * in, * out;
@@ -796,10 +796,10 @@ int main(int argc, char ** argv) {
     packer_module = open_module(packer_dll);
     pack_section = get_symbol(packer_module, "pack_section");
     signature = get_symbol(packer_module, "signature");
-#endif
     if (signature() != stub_signature) {
 	printe("Packer's signature and stub's signature are not matching.\n");
     }
+#endif
 
     printv("Preparing output elf file.\n");
     prepare_out(out, base);

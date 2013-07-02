@@ -50,6 +50,11 @@ loop:
 zero_loop:
 	sb	$0, 0($s4)
 	addiu   $s4, 1
+	nop
+	nop
+	nop
+	nop
+	nop
 	bnez	$s0, zero_loop
 	addiu	$s0, -1
 	
