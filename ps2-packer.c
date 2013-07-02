@@ -194,14 +194,14 @@ typedef struct {
 void sanity_checks() {
     u32 t1 = 0x12345678;
     u8 * t2 = (u8 *) &t1;
-    
+
     if (t2[0] == 0x12) {
 	bigendian = 1;
 	SWAP32(ELF_MAGIC);
     } else if (t2[0] != 0x78) {
 	printe("Error computing machine's endianess!\n");
     }
-    
+
     if (sizeof(u8) != 1) {
 	printv("Error: sizeof(u8) != 1\n");
     }
@@ -225,11 +225,12 @@ void show_banner() {
 
 void show_usage() {
     printf(
-	"Usage: ps2-packer [-v] [-a X] [-b X] "
+	"Usage: ps2-packer [-h] [-v] [-a X] [-b X] "
 #ifndef PS2_PACKER_LITE
 	"[-p X] [-s X] "
 #endif
 	"[-r X] <in_elf> <out_elf>\n"
+	"    -h             show this help.\n"
 	"    -v             verbose mode.\n"
 	"    -b base        sets the loading base of the compressed data. When activated\n"
 	"                     it will activate the alternative packing way.\n"
@@ -252,16 +253,17 @@ u8 ident[] = {
 
 void remove_section_zeroes(u8 * section, u32 * section_size, u32 * zeroes) {
     u32 removed = 0;
-    u32 whole_size;
-    u32 realign = 0;
-    
+
     while (!section[*section_size - 1 - removed]) {
+	if (*section_size == removed)
+	    break;
 	removed++;
     }
 
-#if 0    
-    whole_size = *section_size + *zeroes;
-    
+#if 0
+    u32 whole_size = *section_size + *zeroes;
+    u32 realign = 0;
+
     if (whole_size & (alignment - 1)) {
 	realign = whole_size + alignment;
 	realign &= -alignment;
@@ -271,9 +273,9 @@ void remove_section_zeroes(u8 * section, u32 * section_size, u32 * zeroes) {
 	    removed = 0;
     }
 #endif
-    
+
     printv("Removing %i zeroes to section...\n", removed);
-    
+
     *section_size -= removed;
     *zeroes += removed;
 }
@@ -296,28 +298,30 @@ int count_sections(FILE * stub) {
     fseek(stub, 0, SEEK_END);
     size = ftell(stub);
     fseek(stub, 0, SEEK_SET);
-    
+
     loadbuf = (u8 *) malloc(size);
-    fread(loadbuf, 1, size, stub);
+    if (fread(loadbuf, 1, size, stub) != size) {
+      printe("fread error\n");
+    }
 
     eh = (elf_header_t *)loadbuf;
     SWAP_ELF_HEADER((*eh));
-    if (*(u32 *)&eh->ident != ELF_MAGIC) {
+    if (memcmp(eh->ident, &ELF_MAGIC, sizeof(ELF_MAGIC)) != 0) {
         printe("This ain't no ELF file\n");
     }
-    
+
     /* Parsing the interesting program headers */
     eph = (elf_pheader_t *)(loadbuf + eh->phoff);
     for (i = 0; i < eh->phnum; i++) {
 	SWAP_ELF_PHEADER(eph[i]);
-        if (eph[i].type != PT_LOAD)
+        if ((eph[i].type != PT_LOAD) || (eph[i].filesz == 0))
             continue;
-	
+
 	r++;
     }
-    
+
     free(loadbuf);
-    
+
     return r;
 }
 
@@ -337,19 +341,21 @@ void load_stub(
 #endif
     ) {
     u8 * loadbuf, * pdata;
-    int size;
     int i;
     elf_header_t *eh = 0;
     elf_pheader_t *eph = 0;
     int loaded = 0;
 
 #ifndef PS2_PACKER_LITE
+    int size;
     fseek(stub, 0, SEEK_END);
     size = ftell(stub);
     fseek(stub, 0, SEEK_SET);
-    
+
     loadbuf = (u8 *) malloc(size);
-    fread(loadbuf, 1, size, stub);
+    if (fread(loadbuf, 1, size, stub) != size) {
+      printe("fread error\n");
+    }
 #else
     if (sections == 1) {
 	loadbuf = _binary_b_stub_one_start;
@@ -360,12 +366,12 @@ void load_stub(
 
     eh = (elf_header_t *)loadbuf;
     SWAP_ELF_HEADER((*eh));
-    if (*(u32 *)&eh->ident != ELF_MAGIC) {
+    if (memcmp(eh->ident, &ELF_MAGIC, sizeof(ELF_MAGIC)) != 0) {
         printe("This ain't no ELF file\n");
     }
-    
+
     stub_pc = eh->entry;
-    
+
     printv("Stub PC = %08X\n", stub_pc);
 
     /* Parsing the interesting program headers */
@@ -379,25 +385,25 @@ void load_stub(
 	stub_size = eph[i].filesz;
 	stub_section = (u8 *) malloc(eph[i].filesz);
         memcpy(stub_section, pdata, eph[i].filesz);
-	
+
 	stub_base = eph[i].vaddr;
 	stub_zero = eph[i].memsz - eph[i].filesz;
-	
+
 	if (reload != 0)
 	    stub_base = reload;
-	
-	
+
+
 	loaded = 1;
 	break;
     }
-    
+
     if (!loaded)
 	printe("Unable to load stub file.\n");
 
     stub_data = (u32 *) (stub_section + stub_pc - stub_base - 8);
     stub_signature = stub_data[0];
     SWAP32(stub_signature);
-    
+
     remove_section_zeroes(stub_section, &stub_size, &stub_zero);
     printv("Loaded stub: %08X bytes (with %08X zeroes) based at %08X\n", stub_size, stub_zero, stub_base);
 
@@ -414,7 +420,7 @@ void prepare_out(FILE * out, u32 base) {
     elf_header_t eh;
     elf_pheader_t eph;
     int i;
-    
+
     for (i = 0; i < 16; i++) {
 	eh.ident[i] = ident[i];
     }
@@ -432,19 +438,19 @@ void prepare_out(FILE * out, u32 base) {
     eh.shentsize = 0;
     eh.entry = stub_pc;
     eh.shstrndx = 0;
-    
+
     SWAP_ELF_HEADER(eh);
 
     if (fwrite(&eh, 1, sizeof(eh), out) != sizeof(eh)) {
 	printe("Error writing elf header\n");
     }
-    
+
     if (!alternative) {
         data_pointer = sizeof(eh) + sizeof(eph);
         realign_data_pointer();
 	return;
     }
-    
+
     data_pointer = sizeof(eh) + 2 * sizeof(eph);
     realign_data_pointer();
 
@@ -456,33 +462,34 @@ void prepare_out(FILE * out, u32 base) {
     eph.filesz = stub_size;
     eph.memsz = stub_size + stub_zero;
     eph.align = alignment;
-    
+
     SWAP_ELF_PHEADER(eph);
-    
+
     if (fwrite(&eph, 1, sizeof(eph), out) != sizeof(eph)) {
 	printe("Error writing stub program header\n");
     }
-    
+
     fseek(out, data_pointer, SEEK_SET);
-    
+
     SWAP32(base);
     stub_data[1] = base;
-    
+
     if (fwrite(stub_section, 1, stub_size, out) != stub_size) {
 	printe("Error writing stub\n");
     }
-    
+
     data_pointer += stub_size;
     realign_data_pointer();
-    
+
     printv("Actual pointer in file = %08X\n", data_pointer);
 }
 
 /* Will produce the second program section of the elf, by packing all the
    program headers of the input file */
 void packing(FILE * out, FILE * in, u32 base, int use_asm_n2e) {
-    u8 * loadbuf, * pdata, * packed;
-    int size, section_size, packed_size;
+    u8 * loadbuf, * pdata, * packed = 0;
+    int size, packed_size = 0;
+    u32 section_size;
     int i;
     elf_header_t *eh = 0;
     elf_pheader_t *eph = 0, weph;
@@ -505,23 +512,25 @@ void packing(FILE * out, FILE * in, u32 base, int use_asm_n2e) {
     fseek(in, 0, SEEK_END);
     size = ftell(in);
     fseek(in, 0, SEEK_SET);
-    
+
     loadbuf = (u8 *) malloc(size);
-    fread(loadbuf, 1, size, in);
+    if (fread(loadbuf, 1, size, in) != size) {
+      printe("fread error\n");
+    }
 
     eh = (elf_header_t *)loadbuf;
     SWAP_ELF_HEADER((*eh));
-    if (*(u32 *)&eh->ident != ELF_MAGIC) {
+    if (memcmp(eh->ident, &ELF_MAGIC, sizeof(ELF_MAGIC)) != 0) {
         printe("This ain't no ELF file\n");
     }
-    
+
     ph.entryAddr = eh->entry;
     ph.numSections = 0;
-    
+
     printv("ELF PC = %08X\n", ph.entryAddr);
 
     eph = (elf_pheader_t *)(loadbuf + eh->phoff);
-    
+
     /* counting and swapping the program headers of the input file */
     for (i = 0; i < eh->phnum; i++) {
 	SWAP_ELF_PHEADER(eph[i]);
@@ -529,7 +538,7 @@ void packing(FILE * out, FILE * in, u32 base, int use_asm_n2e) {
             continue;
 	ph.numSections++;
     }
-    
+
     weph.filesz = 0;
     fseek(out, data_pointer, SEEK_SET);
     SWAP_PACKED_HEADER(ph);
@@ -545,23 +554,23 @@ void packing(FILE * out, FILE * in, u32 base, int use_asm_n2e) {
 
     /* looping on the program headers to pack them */
     for (i = 0; i < eh->phnum; i++) {
-        if (eph[i].type != PT_LOAD)
+        if ((eph[i].type != PT_LOAD) || (eph[i].filesz == 0))
             continue;
 
         pdata = (loadbuf + eph[i].offset);
 	section_size = eph[i].filesz;
-	
+
 	psh.originalSize = section_size;
 	psh.virtualAddr = eph[i].vaddr;
 	psh.zeroByteSize = eph[i].memsz - eph[i].filesz;
-	
+
 	remove_section_zeroes(pdata, &section_size, &psh.zeroByteSize);
 	printv("Loaded section: %08X bytes (with %08X zeroes) based at %08X\n", psh.originalSize, psh.zeroByteSize, psh.virtualAddr);
-	
+
 	psh.compressedSize = packed_size = pack_section(pdata, &packed, section_size);
-	
+
 	printv("Section packed, from %u to %u bytes, ratio = %5.2f%%\n", section_size, packed_size, 100.0 * (section_size - packed_size) / section_size);
-	
+
 	SWAP_PACKED_SECTION_HEADER(psh);
 	if (use_asm_n2e == 2) {  // we don't need compressed size
 	    if (fwrite(&psh, 1, 3 * sizeof(u32), out) != 3 * sizeof(u32))
@@ -582,7 +591,7 @@ void packing(FILE * out, FILE * in, u32 base, int use_asm_n2e) {
 
 	free(packed);
     }
-    
+
     if (!alternative) {
 	/* Padd data so they are a multiple of alignment. */
 	if (weph.filesz & (alignment - 1)) {
@@ -596,20 +605,20 @@ void packing(FILE * out, FILE * in, u32 base, int use_asm_n2e) {
         weph.paddr = base;
 	SWAP32(base);
 	stub_data[1] = base;
-    
+
 	printv("Writing stub.\n");
 
 	if (fwrite(stub_section, 1, stub_size, out) != stub_size) {
 	    printe("Error writing stub\n");
 	}
-	
-	weph.filesz += stub_size;	
+
+	weph.filesz += stub_size;
     }
     data_pointer += weph.filesz;
-    
+
     printv("All data written, writing program header.\n");
     weph.memsz = weph.filesz + stub_zero;
-    
+
     if (alternative)
 	fseek(out, sizeof(*eh) + sizeof(*eph), SEEK_SET);
     else
@@ -617,7 +626,7 @@ void packing(FILE * out, FILE * in, u32 base, int use_asm_n2e) {
     SWAP_ELF_PHEADER(weph);
     if (fwrite(&weph, 1, sizeof(weph), out) != sizeof(weph))
 	printe("Error writing packed program header.\n");
-    
+
     free(loadbuf);
 }
 
@@ -627,7 +636,7 @@ void packing(FILE * out, FILE * in, u32 base, int use_asm_n2e) {
 
 int file_exists(const char * fname) {
     FILE * f;
-    
+
     if (!(f = fopen(fname, "rb")))
 	return 0;
 
@@ -638,35 +647,35 @@ int file_exists(const char * fname) {
 int main(int argc, char ** argv) {
     char c;
     u32 base = 0;
-    char buffer[BUFSIZ + 1];
 #ifndef PS2_PACKER_LITE
+    char buffer[BUFSIZ + 1];
     char * packer_name = 0;
     char * stub_name = 0;
     char * packer_dll = 0;
 #endif
     char * in_name;
     char * out_name;
-    void * packer_module = 0;
 #ifndef PS2_PACKER_LITE
+    void * packer_module = 0;
     FILE * stub_file;
 #endif
     FILE * in, * out;
     u32 size_in, size_out;
     int use_asm_n2e = 0;
     char * pwd;
-    
+
     sanity_checks();
-    
+
     show_banner();
-    
+
     if ((pwd = strrchr(argv[0], '/'))) {
 	*pwd = 0;
     } else if ((pwd = strrchr(argv[0], '\\'))) {
 	*pwd = 0;
     }
-    
+
     pwd = argv[0];
-    
+
     while ((c = getopt_long(argc, argv, "b:a:"
 #ifndef PS2_PACKER_LITE
 	        "p:s:"
@@ -698,37 +707,38 @@ int main(int argc, char ** argv) {
 	    show_usage();
 	    exit(0);
 	default:
-	    printe("Unknown option %c\n", c);
+	    printf("Unknown option %c\n\n", c);
 	    show_usage();
 	    exit(-1);
 	}
     }
 
-    if (alternative)    
+    if (alternative)
         printv("Using alternative packing method.\n");
 
     if ((argc - optind) != 2) {
-	printe("%i files specified, I need exactly 2.\n", argc - optind);
+	printf("%i files specified, I need exactly 2.\n\n", argc - optind);
+	show_usage();
     }
-    
+
     in_name = argv[optind++];
     out_name = argv[optind++];
-    
+
     if (!(in = fopen(in_name, "rb"))) {
 	printe("Unable to open input file %s\n", in_name);
     }
-    
+
     if (!(out = fopen(out_name, "wb"))) {
 	printe("Unable to open output file %s\n", out_name);
     }
-    
+
     sections = count_sections(in);
-    
+
 #ifndef PS2_PACKER_LITE
     if (!packer_name) {
 	packer_name = "n2e";
     }
-    
+
     if (!stub_name) {
 	if (!base) {
 	    if (strcmp(packer_name, "n2e") == 0) {
@@ -762,21 +772,21 @@ int main(int argc, char ** argv) {
     if (!(stub_file = fopen(stub_name, "rb"))) {
 	printe("Unable to open stub file %s\n", stub_name);
     }
-    
+
     snprintf(buffer, BUFSIZ, PREFIX "/share/ps2-packer/module/%s-packer" SUFFIX, packer_name);
     if (!file_exists(buffer)) {
 	snprintf(buffer, BUFSIZ, "%s/%s-packer" SUFFIX, pwd, packer_name);
 	if (!file_exists(buffer))
 	    snprintf(buffer, BUFSIZ, "./%s-packer" SUFFIX, packer_name);
     }
-    
+
     packer_dll = strdup(buffer);
 #else
     use_asm_n2e = ((sections == 1) ? 2 : 1);
 #endif
-    
+
     printf("Compressing %s...\n", in_name);
-    
+
     printv("Loading stub file.\n");
 #ifndef PS2_PACKER_LITE
     load_stub(stub_file);
@@ -790,25 +800,25 @@ int main(int argc, char ** argv) {
     packer_module = open_module(packer_dll);
     pack_section = get_symbol(packer_module, "pack_section");
     signature = get_symbol(packer_module, "signature");
-#endif
     if (signature() != stub_signature) {
 	printe("Packer's signature and stub's signature are not matching.\n");
     }
-    
+#endif
+
     printv("Preparing output elf file.\n");
     prepare_out(out, base);
-    
+
     printv("Packing.\n");
     packing(out, in, base, use_asm_n2e);
-    
+
     printv("Done!\n");
-    
+
     fseek(in, 0, SEEK_END);
     size_in = ftell(in);
     size_out = data_pointer;
-    
+
     printf("File compressed, from %i to %i bytes, ratio = %5.2f%%\n", size_in, size_out, 100.0 * (size_in - size_out) / size_in);
-    
+
     fclose(out);
     fclose(in);
 
