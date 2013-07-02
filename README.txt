@@ -68,6 +68,10 @@ Changelog
   2005/04/10: fixed a stub loading bug reported by TyRaNiD.
               added more -kmode stubs.
 	      tagging as 0.4.5
+  2005/11/10: adding a safety fix about zero-sized program headers.
+              tagging as 1.0rc1 since now it's mature enough.
+  2005/11/20: fixed a bug causing a big crash with a zero-only section.
+              tagging as 1.0rc2
 
 
 Todo

@@ -255,6 +255,8 @@ void remove_section_zeroes(u8 * section, u32 * section_size, u32 * zeroes) {
     u32 removed = 0;
 
     while (!section[*section_size - 1 - removed]) {
+	if (*section_size == removed)
+	    break;
 	removed++;
     }
 
@@ -312,7 +314,7 @@ int count_sections(FILE * stub) {
     eph = (elf_pheader_t *)(loadbuf + eh->phoff);
     for (i = 0; i < eh->phnum; i++) {
 	SWAP_ELF_PHEADER(eph[i]);
-        if (eph[i].type != PT_LOAD)
+        if ((eph[i].type != PT_LOAD) || (eph[i].filesz == 0))
             continue;
 
 	r++;
@@ -552,7 +554,7 @@ void packing(FILE * out, FILE * in, u32 base, int use_asm_n2e) {
 
     /* looping on the program headers to pack them */
     for (i = 0; i < eh->phnum; i++) {
-        if (eph[i].type != PT_LOAD)
+        if ((eph[i].type != PT_LOAD) || (eph[i].filesz == 0))
             continue;
 
         pdata = (loadbuf + eph[i].offset);
