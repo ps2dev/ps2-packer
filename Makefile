@@ -6,7 +6,7 @@ SHELL = /bin/sh
 SYSTEM = $(shell uname)
 LIBZA = -lz
 LIBUCLA = -lucl
-VERSION = 0.4.5
+VERSION = 0.4.6
 CC = gcc
 BIN2O = ld -r -b binary
 CPPFLAGS = -O3 -Wall -I. -DVERSION=\"$(VERSION)\" -DPREFIX=\"$(PREFIX)\"

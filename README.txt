@@ -1,4 +1,4 @@
-PS2-Packer version 0.4.5
+PS2-Packer version 0.4.6
 ========================
 
 Overview
@@ -72,6 +72,7 @@ Changelog
               tagging as 1.0rc1 since now it's mature enough.
   2005/11/20: fixed a bug causing a big crash with a zero-only section.
               tagging as 1.0rc2
+  2013/11/23: update to miniLZO version 2.06
 
 
 Todo
