@@ -22,7 +22,7 @@ n2e-asm-1d00-stub n2e-asm-one-1d00-stub
 all: $(TARGETS)
 
 install: all
-	install $(TARGETS) $(PREFIX)/share/ps2-packer/stub -m 644
+	install -m 644 $(TARGETS) $(PREFIX)/share/ps2-packer/stub
 
 dist: $(TARGETS)
 	ee-strip $(TARGETS)
