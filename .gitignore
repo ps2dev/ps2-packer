@@ -7,3 +7,4 @@ ps2-packer
 ps2-packer-lite
 # TODO: OS X build products (.dsym, .dylib, etc)
 
+*.dylib

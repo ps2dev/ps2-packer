@@ -16,6 +16,9 @@ ifeq ($(SYSTEM),Darwin)
 CPPFLAGS += -D__APPLE__
 SHARED = -dynamiclib
 SHAREDSUFFIX = .dylib
+CC = /usr/bin/gcc
+CPPFLAGS += -I/opt/local/include -L/opt/local/lib
+BIN2O = /usr/bin/ld -r -arch x86_64
 else
 SHARED = -shared
 SHAREDSUFFIX = .so
@@ -24,15 +27,15 @@ endif
 
 PACKERS = zlib-packer lzo-packer n2b-packer n2d-packer n2e-packer null-packer
 
-all: ps2-packer ps2-packer-lite packers stubs
+all: ps2-packer packers stubs
 
 install: all
 	$(INSTALL) -d $(PREFIX)/bin
 	$(INSTALL) -d $(PREFIX)/share/ps2-packer/module
 	$(INSTALL) -d $(PREFIX)/share/ps2-packer/stub
-	$(INSTALL) ps2-packer $(PREFIX)/bin -m 755
-	$(INSTALL) $(addsuffix $(SHAREDSUFFIX),$(PACKERS)) $(PREFIX)/share/ps2-packer/module -m 755
-	$(INSTALL) ps2-packer $(PREFIX)/bin -m 755
+	$(INSTALL) -m 755 ps2-packer $(PREFIX)/bin
+	$(INSTALL) -m 755 $(addsuffix $(SHAREDSUFFIX),$(PACKERS)) $(PREFIX)/share/ps2-packer/module
+	$(INSTALL) -m 755 ps2-packer $(PREFIX)/bin
 	PREFIX=$(PREFIX) $(SUBMAKE) stub install
 
 ps2-packer: ps2-packer.c dlopen.c
