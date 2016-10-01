@@ -33,38 +33,33 @@
 
 #include "ucl_conf.h"
 #include "getbit.h"
-#define getbit(bb)      getbit_8(bb,src,ilen)
+#define getbit(bb) getbit_8(bb, src, ilen)
 
 UCL_PUBLIC(int)
-ucl_nrv2e_decompress_8          ( const ucl_bytep src, ucl_uint  src_len,
-                                        ucl_bytep dst, ucl_uintp dst_len)
+ucl_nrv2e_decompress_8(const ucl_bytep src, ucl_uint src_len,
+                       ucl_bytep dst, ucl_uintp dst_len)
 {
     ucl_uint32 bb = 0;
     ucl_uint ilen = 0, olen = 0, last_m_off = 1;
 
-    for (;;)
-    {
+    for (;;) {
         ucl_uint m_off, m_len;
 
-        while (getbit(bb))
-        {
+        while (getbit(bb)) {
             dst[olen++] = src[ilen++];
         }
         m_off = 1;
-        for (;;)
-        {
-            m_off = m_off*2 + getbit(bb);
-            if (getbit(bb)) break;
-            m_off = (m_off-1)*2 + getbit(bb);
+        for (;;) {
+            m_off = m_off * 2 + getbit(bb);
+            if (getbit(bb))
+                break;
+            m_off = (m_off - 1) * 2 + getbit(bb);
         }
-        if (m_off == 2)
-        {
+        if (m_off == 2) {
             m_off = last_m_off;
             m_len = getbit(bb);
-        }
-        else
-        {
-            m_off = (m_off-3)*256 + src[ilen++];
+        } else {
+            m_off = (m_off - 3) * 256 + src[ilen++];
             if (m_off == UCL_UINT32_C(0xffffffff))
                 break;
             m_len = (m_off ^ UCL_UINT32_C(0xffffffff)) & 1;
@@ -75,11 +70,10 @@ ucl_nrv2e_decompress_8          ( const ucl_bytep src, ucl_uint  src_len,
             m_len = 1 + getbit(bb);
         else if (getbit(bb))
             m_len = 3 + getbit(bb);
-        else
-        {
+        else {
             m_len++;
             do {
-                m_len = m_len*2 + getbit(bb);
+                m_len = m_len * 2 + getbit(bb);
             } while (!getbit(bb));
             m_len += 3;
         }
@@ -89,9 +83,8 @@ ucl_nrv2e_decompress_8          ( const ucl_bytep src, ucl_uint  src_len,
             m_pos = dst + olen - m_off;
             dst[olen++] = *m_pos++;
             do {
-		dst[olen++] = *m_pos++;
-	    }
-	    while (--m_len > 0);
+                dst[olen++] = *m_pos++;
+            } while (--m_len > 0);
         }
     }
     *dst_len = olen;

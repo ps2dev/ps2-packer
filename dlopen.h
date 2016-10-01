@@ -22,7 +22,7 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #ifndef DLOPEN_H
 #define DLOPEN_H
 
-void *open_module (char *module_name);
-void *get_symbol (void *handle, char *symbol_name);
+void *open_module(char *module_name);
+void *get_symbol(void *handle, char *symbol_name);
 
-#endif // DLOPEN_H
+#endif  // DLOPEN_H

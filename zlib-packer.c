@@ -23,7 +23,8 @@
 #include <zlib.h>
 #include "common.h"
 
-static void printe(char * fmt, ...) {
+static void printe(char *fmt, ...)
+{
     va_list list;
     va_start(list, fmt);
     vfprintf(stderr, fmt, list);
@@ -31,21 +32,22 @@ static void printe(char * fmt, ...) {
     exit(-1);
 }
 
-int pack_section(const u8 * source, u8 ** dest, u32 source_size) {
+int pack_section(const u8 *source, u8 **dest, u32 source_size)
+{
     u32 packed_size;
-    u8 * packed;
+    u8 *packed;
     z_stream c_stream;
-    
+
     packed_size = source_size * 1.2 + 2048;
-    packed = (u8 *) malloc(packed_size);
-	
+    packed = (u8 *)malloc(packed_size);
+
     c_stream.zalloc = (alloc_func)0;
     c_stream.zfree = (free_func)0;
     c_stream.opaque = (voidpf)0;
-	
+
     if (deflateInit(&c_stream, 9) != Z_OK)
         printe("Error during deflateInit.\n");
-	
+
     c_stream.next_in = source;
     c_stream.avail_in = source_size;
     c_stream.next_out = packed;
@@ -53,7 +55,7 @@ int pack_section(const u8 * source, u8 ** dest, u32 source_size) {
 
     if (deflate(&c_stream, Z_FINISH) != Z_STREAM_END)
         printe("Error during deflate.\n");
-	
+
     if (deflateEnd(&c_stream) != Z_OK)
         printe("Error during deflateEnd.\n");
 
@@ -66,6 +68,7 @@ int pack_section(const u8 * source, u8 ** dest, u32 source_size) {
     return packed_size;
 }
 
-u32 signature() {
+u32 signature()
+{
     return 0x42494c5a;
 }
