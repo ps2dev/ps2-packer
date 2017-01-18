@@ -3,7 +3,7 @@ SUBMAKE = MAKE=$(MAKE) $(MAKE) -C
 include $(PS2SDK)/Defs.make
 
 EE_CPPFLAGS = -G0 -I $(PS2SDK)/ee/include -I $(PS2SDK)/common/include -I . -I zlib -I lzo -I ucl -D_EE -O3 -Wall -DDO_EXECPS2
-EE_LDFLAGS = -T ./linkfile -L $(PS2SDK)/ee/lib -lc -lkernel -lc -lsyscall
+EE_LDFLAGS = -T ./linkfile -L $(PS2SDK)/ee/lib -lc -lkernel -lc
 
 TARGETS = \
 zlib-1d00-stub zlib-0088-stub \
