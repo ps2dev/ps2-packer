@@ -23,14 +23,16 @@
 
 /* We don't have to pack anything. However, we have to return an malloc()ed
    piece of memory. */
-int pack_section(const u8 * source, u8 ** dest, u32 source_size) {
-    *dest = (u8 *) malloc(source_size);
+int pack_section(const u8 *source, u8 **dest, u32 source_size)
+{
+    *dest = (u8 *)malloc(source_size);
     memcpy(*dest, source, source_size);
     return source_size;
 }
 
 /* The signature of the NULL module. This hexadecimal number means "NULL"
    in little endian. The endianess should be safe. */
-u32 signature() {
+u32 signature()
+{
     return 0x4c4c554e;
 }

@@ -46,14 +46,14 @@ extern "C" {
 #endif
 
 UCL_EXTERN(int)
-ucl_nrv2b_decompress_8          ( const ucl_bytep src, ucl_uint  src_len,
-                                        ucl_bytep dst, ucl_uintp dst_len);
+ucl_nrv2b_decompress_8(const ucl_bytep src, ucl_uint src_len,
+                       ucl_bytep dst, ucl_uintp dst_len);
 UCL_EXTERN(int)
-ucl_nrv2d_decompress_8          ( const ucl_bytep src, ucl_uint  src_len,
-                                        ucl_bytep dst, ucl_uintp dst_len);
+ucl_nrv2d_decompress_8(const ucl_bytep src, ucl_uint src_len,
+                       ucl_bytep dst, ucl_uintp dst_len);
 UCL_EXTERN(int)
-ucl_nrv2e_decompress_8          ( const ucl_bytep src, ucl_uint  src_len,
-                                        ucl_bytep dst, ucl_uintp dst_len);
+ucl_nrv2e_decompress_8(const ucl_bytep src, ucl_uint src_len,
+                       ucl_bytep dst, ucl_uintp dst_len);
 
 #ifdef __cplusplus
 } /* extern "C" */

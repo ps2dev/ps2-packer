@@ -24,19 +24,18 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #include <windows.h>
 
 BOOL WINAPI
-DllMain (HINSTANCE h, DWORD reason, LPVOID ptr)
+DllMain(HINSTANCE h, DWORD reason, LPVOID ptr)
 {
-  switch (reason)
-    {
-    case DLL_PROCESS_ATTACH:
-      DisableThreadLibraryCalls ((HMODULE) h);
-      break;
-    case DLL_PROCESS_DETACH:
-      break;
-    case DLL_THREAD_ATTACH:
-      break;
-    case DLL_THREAD_DETACH:
-      break;
+    switch (reason) {
+        case DLL_PROCESS_ATTACH:
+            DisableThreadLibraryCalls((HMODULE)h);
+            break;
+        case DLL_PROCESS_DETACH:
+            break;
+        case DLL_THREAD_ATTACH:
+            break;
+        case DLL_THREAD_DETACH:
+            break;
     }
-  return TRUE;
+    return TRUE;
 }

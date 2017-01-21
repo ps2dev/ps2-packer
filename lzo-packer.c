@@ -23,7 +23,8 @@
 #include "minilzo.h"
 #include "common.h"
 
-static void printe(char * fmt, ...) {
+static void printe(char *fmt, ...)
+{
     va_list list;
     va_start(list, fmt);
     vfprintf(stderr, fmt, list);
@@ -31,24 +32,26 @@ static void printe(char * fmt, ...) {
     exit(-1);
 }
 
-int pack_section(const u8 * source, u8 ** dest, u32 source_size) {
+int pack_section(const u8 *source, u8 **dest, u32 source_size)
+{
     lzo_uint packed_size;
-    u8 * packed, work[LZO1X_1_MEM_COMPRESS];
-    
+    u8 *packed, work[LZO1X_1_MEM_COMPRESS];
+
     packed_size = source_size * 1.2 + 2048;
-    packed = (u8 *) malloc(packed_size);
-    
+    packed = (u8 *)malloc(packed_size);
+
     if (lzo1x_1_compress(source, source_size, packed, &packed_size, work) != LZO_E_OK) {
-	printe("Error during lzo1_compress.\n");
+        printe("Error during lzo1_compress.\n");
     }
-    
+
     packed = realloc(packed, packed_size);
 
     *dest = packed;
-    
+
     return packed_size;
 }
 
-u32 signature() {
+u32 signature()
+{
     return 0x314f5a4c;
 }
