@@ -30,8 +30,8 @@ _start:
 	addiu	$s0, $s2, 16 // skip entry point, original size, zero byte size, virtual address, == source
 	lw	$s3, 4($s2)
 	addu	$s4, $s3, $s1
-	bal	n2e_decompress
-	
+	jal	n2e_decompress
+
 	lw	$s0, 8($s2)
 
 	.set noreorder
@@ -45,16 +45,18 @@ loop:
 	nop
 	bnez	$s0, loop
 	addiu	$s0, -1
-	
+
 	.set reorder
-	
+
 	move	$s0, $a0
 	move	$s1, $a1
 
+	#FlushCache(0)
 	li	$v1, 0x64
 	move	$a0, $0
 	syscall
-	
+
+	#FlushCache(2)
 	li	$v1, 0x64
 	li	$a0, 2
 	syscall

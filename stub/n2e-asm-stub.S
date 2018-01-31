@@ -38,7 +38,7 @@ loop:
 	addiu	$s0, $s2, 16	// skip original size, zero byte size, virtual address, compressed size, == source
 	lw	$s3, 0($s2)
 	addu	$s4, $s3, $s1
-	bal	n2e_decompress
+	jal	n2e_decompress
 	
 	lw	$s0, 4($s2)
 	lw	$s1, 12($s2)
@@ -69,10 +69,12 @@ zero_loop:
 	move	$s0, $a0
 	move	$s1, $a1
 
+	#FlushCache(0)
 	li	$v1, 0x64
 	move	$a0, $0
 	syscall
-	
+
+	#FlushCache(2)
 	li	$v1, 0x64
 	li	$a0, 2
 	syscall
