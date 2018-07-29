@@ -37,6 +37,15 @@ Signature:
 PackedELF:
 	.word	0x1b00000
 
+	#Avoid the hardware restriction that could cause data placed adjacent to instructions to be considered as a CACHE instruction,
+	#which may fetch a wrong instruction, destroy data or affect FPU division.
+	#This would happen if the data and instructions have a certain bit pattern. Requires 5 or more nops to avoid.
+	nop
+	nop
+	nop
+	nop
+	nop
+
 	.ent _start
 _start:
 

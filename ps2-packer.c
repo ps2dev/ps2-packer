@@ -400,7 +400,7 @@ void load_stub(
     if (!loaded)
 	printe("Unable to load stub file.\n");
 
-    stub_data = (u32 *) (stub_section + stub_pc - stub_base - 8);
+    stub_data = (u32 *) (stub_section + stub_pc - stub_base - (2+5)*4); //get the address of Signature within the stub.
     stub_signature = stub_data[0];
     SWAP32(stub_signature);
 
