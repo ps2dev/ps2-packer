@@ -326,12 +326,8 @@ int count_sections(FILE * stub) {
 }
 
 #ifdef PS2_PACKER_LITE
-#ifdef __MINGW32__
-#include "mingw-builtin_stub_one.h"
-#include "mingw-builtin_stub.h"
-#endif
-extern u8 _binary_b_stub_one_start[];
-extern u8 _binary_b_stub_start[];
+extern u8 builtin_stub_one[];
+extern u8 builtin_stub[];
 #endif
 
 /* Loads the stub file in memory, filling up the global variables */
@@ -358,9 +354,9 @@ void load_stub(
     }
 #else
     if (sections == 1) {
-	loadbuf = _binary_b_stub_one_start;
+	loadbuf = builtin_stub_one;
     } else {
-	loadbuf = _binary_b_stub_start;
+	loadbuf = builtin_stub;
     }
 #endif
 

@@ -6,9 +6,9 @@ SHELL = /bin/sh
 SYSTEM = $(shell uname)
 LIBZA = -lz
 LIBUCLA = -lucl
-VERSION = 0.4.6
+VERSION = 1.1.0
 CC = gcc
-BIN2O = ld -r -b binary
+BIN2C = bin2c
 CPPFLAGS = -O3 -Wall -I. -DVERSION=\"$(VERSION)\" -DPREFIX=\"$(PREFIX)\"
 INSTALL = install
 
@@ -16,20 +16,28 @@ ifeq ($(SYSTEM),Darwin)
 CPPFLAGS += -D__APPLE__
 SHARED = -dynamiclib
 SHAREDSUFFIX = .dylib
+EXECSUFFIX =
 CC = /usr/bin/gcc
 CPPFLAGS += -I/opt/local/include -L/opt/local/lib
-BIN2O = /usr/bin/ld -r -arch x86_64
+DIST_PACK_CMD = tar cvfz
+DIST_PACK_EXT = .tar.gz
 else ifeq ($(OS),Windows_NT)
 SHARED = -shared
 SHAREDSUFFIX = .dll
+EXECSUFFIX = .exe
+DIST_PACK_CMD = zip -9
+DIST_PACK_EXT = .zip
 else
 SHARED = -shared
 SHAREDSUFFIX = .so
+EXECSUFFIX =
+DIST_PACK_CMD = tar cvfz
+DIST_PACK_EXT = .tar.gz
 endif
 
 PACKERS = zlib-packer lzo-packer n2b-packer n2d-packer n2e-packer null-packer
 
-all: ps2-packer packers stubs
+all: ps2-packer ps2-packer-lite packers stubs
 
 install: all
 	$(INSTALL) -d $(PREFIX)/bin
@@ -41,19 +49,19 @@ install: all
 	PREFIX=$(PREFIX) $(SUBMAKE) stub install
 
 ps2-packer: ps2-packer.c dlopen.c
-	$(CC) $(CPPFLAGS) ps2-packer.c dlopen.c -o ps2-packer
+	$(CC) $(CPPFLAGS) ps2-packer.c dlopen.c -o ps2-packer$(EXECSUFFIX)
 
 ps2-packer-lite: ps2-packer.c builtin_stub_one.o builtin_stub.o
-	$(CC) $(CPPFLAGS) -DPS2_PACKER_LITE ps2-packer.c n2e-packer.c $(LIBUCLA) builtin_stub_one.o builtin_stub.o -o ps2-packer-lite
+	$(CC) $(CPPFLAGS) -DPS2_PACKER_LITE ps2-packer.c n2e-packer.c $(LIBUCLA) builtin_stub_one.o builtin_stub.o -o ps2-packer-lite$(EXECSUFFIX)
 
-builtin_stub_one.o: stubs-tag.stamp
+builtin_stub_one.c: stubs-tag.stamp
 	cp stub/n2e-asm-one-1d00-stub ./b_stub_one
-	$(BIN2O) b_stub_one -o builtin_stub_one.o
+	$(BIN2C) b_stub_one builtin_stub_one.c builtin_stub_one
 	rm b_stub_one
 
-builtin_stub.o: stubs-tag.stamp
+builtin_stub.c: stubs-tag.stamp
 	cp stub/n2e-asm-1d00-stub ./b_stub
-	$(BIN2O) b_stub -o builtin_stub.o
+	$(BIN2C) b_stub builtin_stub.c builtin_stub
 	rm b_stub
 
 stubs: stubs-tag.stamp
@@ -90,7 +98,7 @@ stubs-dist:
 	$(SUBMAKE) stub dist
 
 clean:
-	rm -f ps2-packer ps2-packer-lite ps2-packer.exe ps2-packer-lite.exe *.zip *.gz *.dll *$(SHAREDSUFFIX) *.o
+	rm -f ps2-packer ps2-packer-lite ps2-packer.exe ps2-packer-lite.exe *.zip *.gz *.dll builtin_stub.c builtin_stub_one.c *$(SHAREDSUFFIX) *.o
 	$(SUBMAKE) stub clean
 	rm -f stubs-tag.stamp
 
@@ -103,12 +111,9 @@ rebuild: clean all
 #
 
 dist: all COPYING stubs-dist README.txt ps2-packer.c $(addsuffix .c,$(PACKERS))
-	strip ps2-packer ps2-packer-lite $(addsuffix $(SHAREDSUFFIX),$(PACKERS))
-	upx-nrv --best ps2-packer ps2-packer-lite ps2-packer.exe ps2-packer-lite.exe $(addsuffix .dll,$(PACKERS))
-	tar cvfz ps2-packer-$(VERSION)-linux.tar.gz ps2-packer $(addsuffix $(SHAREDSUFFIX),$(PACKERS)) COPYING stub/*stub README.txt
-	zip -9 ps2-packer-$(VERSION)-win32.zip ps2-packer.exe $(addsuffix .dll,$(PACKERS)) COPYING stub/*stub README.txt
-	tar cvfz ps2-packer-lite-$(VERSION)-linux.tar.gz ps2-packer-lite COPYING README.txt README-lite.txt
-	zip -9 ps2-packer-lite-$(VERSION)-win32.zip ps2-packer-lite.exe COPYING README.txt README-lite.txt
+	strip ps2-packer$(EXECSUFFIX) ps2-packer-lite$(EXECSUFFIX) $(addsuffix $(SHAREDSUFFIX),$(PACKERS))
+	$(DIST_PACK_CMD) ps2-packer-$(VERSION)$(DIST_PACK_EXT) ps2-packer$(EXECSUFFIX) $(addsuffix $(SHAREDSUFFIX),$(PACKERS)) COPYING stub/*stub README.txt
+	$(DIST_PACK_CMD) ps2-packer-lite-$(VERSION)$(DIST_PACK_EXT) ps2-packer-lite$(EXECSUFFIX) COPYING README.txt README-lite.txt
 	tar cvfz ps2-packer-$(VERSION)-src.tar.gz *.{c,h} Makefile COPYING stub/{Makefile,crt0.s,dummy.s,linkfile,*.{c,h,S}} stub/ucl/*.S stub/{zlib,lzo,ucl}/{Makefile,*.{c,h}} README.txt README-lite.txt
 
 redist: clean dist
