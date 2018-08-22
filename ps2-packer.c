@@ -796,7 +796,7 @@ int main(int argc, char ** argv) {
 #endif
 
 #ifndef PS2_PACKER_LITE
-    printv("Opening packer.\n");
+    printv("Opening packer %s.\n", packer_dll);
     packer_module = open_module(packer_dll);
     pack_section = get_symbol(packer_module, "pack_section");
     signature = get_symbol(packer_module, "signature");
