@@ -19,6 +19,7 @@
 
 #include <stdlib.h>
 #include <unistd.h>
+#include <errno.h>
 #include <stdio.h>
 #include <string.h>
 #include <getopt.h>
@@ -95,7 +96,7 @@ void printv(char * fmt, ...) {
 
 #ifndef PS2_PACKER_LITE
 typedef int (*pack_section_t)(const u8 * source, u8 ** dest, u32 source_size);
-pack_section_t pack_section;
+pack_section_t ppack_section;
 typedef u32 (*signature_t)();
 signature_t signature;
 #endif
@@ -563,7 +564,12 @@ void packing(FILE * out, FILE * in, u32 base, int use_asm_n2e) {
 	remove_section_zeroes(pdata, &section_size, &psh.zeroByteSize);
 	printv("Loaded section: %08X bytes (with %08X zeroes) based at %08X\n", psh.originalSize, psh.zeroByteSize, psh.virtualAddr);
 
-	psh.compressedSize = packed_size = pack_section(pdata, &packed, section_size);
+#ifndef PS2_PACKER_LITE
+	packed_size = ppack_section(pdata, &packed, section_size);
+#else
+	packed_size = pack_section(pdata, &packed, section_size);
+#endif
+	psh.compressedSize = packed_size;
 
 	printv("Section packed, from %u to %u bytes, ratio = %5.2f%%\n", section_size, packed_size, 100.0 * (section_size - packed_size) / section_size);
 
@@ -705,7 +711,7 @@ int main(int argc, char ** argv) {
 	default:
 	    printf("Unknown option %c\n\n", c);
 	    show_usage();
-	    exit(-1);
+	    exit(EINVAL);
 	}
     }
 
@@ -713,8 +719,9 @@ int main(int argc, char ** argv) {
         printv("Using alternative packing method.\n");
 
     if ((argc - optind) != 2) {
-	printf("%i files specified, I need exactly 2.\n\n", argc - optind);
+	printe("%i files specified, I need exactly 2.\n\n", argc - optind);
 	show_usage();
+    exit(EINVAL);
     }
 
     in_name = argv[optind++];
@@ -794,7 +801,7 @@ int main(int argc, char ** argv) {
 #ifndef PS2_PACKER_LITE
     printv("Opening packer %s.\n", packer_dll);
     packer_module = open_module(packer_dll);
-    pack_section = get_symbol(packer_module, "pack_section");
+    ppack_section = get_symbol(packer_module, "pack_section");
     signature = get_symbol(packer_module, "signature");
     if (signature() != stub_signature) {
 	printe("Packer's signature and stub's signature are not matching.\n");

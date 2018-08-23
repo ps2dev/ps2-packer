@@ -11,7 +11,7 @@ void Decompress(u8 *dest, const u8 *src, u32 dst_size, u32 src_size) {
     d_stream.zfree = (free_func)0;
     d_stream.opaque = (voidpf)0;
     
-    d_stream.next_in = src;
+    d_stream.next_in = (u8*)src;
     d_stream.avail_in = src_size;
     d_stream.next_out = dest;
     d_stream.avail_out = dst_size;

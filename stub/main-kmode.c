@@ -52,7 +52,7 @@ int main(int argc, char ** argv) {
     	    fast_memzero((void *)(sectionHeader->virtualAddr + sectionHeader->originalSize), sectionHeader->zeroByteSize);
 	compressedData += sectionHeader->compressedSize;
 	if (((u32) compressedData) & 3)
-	    compressedData = (u32 *) ((((u32)compressedData) | 3) + 1);
+	    compressedData = (u8 *) ((((u32)compressedData) | 3) + 1);
     }
 
     ee_kmode_exit();

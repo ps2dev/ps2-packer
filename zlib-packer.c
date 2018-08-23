@@ -46,7 +46,7 @@ int pack_section(const u8 * source, u8 ** dest, u32 source_size) {
     if (deflateInit(&c_stream, 9) != Z_OK)
         printe("Error during deflateInit.\n");
 	
-    c_stream.next_in = source;
+    c_stream.next_in = (u8*)source;
     c_stream.avail_in = source_size;
     c_stream.next_out = packed;
     c_stream.avail_out = packed_size;
