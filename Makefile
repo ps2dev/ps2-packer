@@ -21,18 +21,21 @@ CC = /usr/bin/gcc
 CPPFLAGS += -I/opt/local/include -L/opt/local/lib
 DIST_PACK_CMD = tar cvfz
 DIST_PACK_EXT = .tar.gz
+LDFLAGS = -ldl
 else ifeq ($(OS),Windows_NT)
 SHARED = -shared
 SHAREDSUFFIX = .dll
 EXECSUFFIX = .exe
 DIST_PACK_CMD = zip -9
 DIST_PACK_EXT = .zip
+LDFLAGS = #Libdl is built into glibc for both Cygwin and MinGW.
 else
 SHARED = -shared
 SHAREDSUFFIX = .so
 EXECSUFFIX =
 DIST_PACK_CMD = tar cvfz
 DIST_PACK_EXT = .tar.gz
+LDFLAGS = -ldl
 endif
 
 PACKERS = zlib-packer lzo-packer n2b-packer n2d-packer n2e-packer null-packer
@@ -49,10 +52,10 @@ install: all
 	PREFIX=$(PREFIX) $(SUBMAKE) stub install
 
 ps2-packer: ps2-packer.c dlopen.c
-	$(CC) $(CPPFLAGS) ps2-packer.c dlopen.c -o ps2-packer$(EXECSUFFIX)
+	$(CC) $(CPPFLAGS) ps2-packer.c dlopen.c $(LDFLAGS) -o ps2-packer$(EXECSUFFIX)
 
 ps2-packer-lite: ps2-packer.c builtin_stub_one.o builtin_stub.o
-	$(CC) $(CPPFLAGS) -DPS2_PACKER_LITE ps2-packer.c n2e-packer.c $(LIBUCLA) builtin_stub_one.o builtin_stub.o -o ps2-packer-lite$(EXECSUFFIX)
+	$(CC) $(CPPFLAGS) -DPS2_PACKER_LITE ps2-packer.c n2e-packer.c $(LIBUCLA) builtin_stub_one.o builtin_stub.o $(LDFLAGS) -o ps2-packer-lite$(EXECSUFFIX)
 
 builtin_stub_one.c: stubs-tag.stamp
 	cp stub/n2e-asm-one-1d00-stub ./b_stub_one
