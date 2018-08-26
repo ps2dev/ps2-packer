@@ -43,12 +43,12 @@ PACKERS = zlib-packer lzo-packer n2b-packer n2d-packer n2e-packer null-packer
 all: ps2-packer ps2-packer-lite packers stubs
 
 install: all
-	$(INSTALL) -d $(PREFIX)/bin
-	$(INSTALL) -d $(PREFIX)/share/ps2-packer/module
-	$(INSTALL) -d $(PREFIX)/share/ps2-packer/stub
-	$(INSTALL) -m 755 ps2-packer $(PREFIX)/bin
-	$(INSTALL) -m 755 $(addsuffix $(SHAREDSUFFIX),$(PACKERS)) $(PREFIX)/share/ps2-packer/module
-	$(INSTALL) -m 755 ps2-packer $(PREFIX)/bin
+	$(INSTALL) -d $(DESTDIR)$(PREFIX)/bin
+	$(INSTALL) -d $(DESTDIR)$(PREFIX)/share/ps2-packer/module
+	$(INSTALL) -d $(DESTDIR)$(PREFIX)/share/ps2-packer/stub
+	$(INSTALL) -m 755 ps2-packer $(DESTDIR)$(PREFIX)/bin
+	$(INSTALL) -m 755 $(addsuffix $(SHAREDSUFFIX),$(PACKERS)) $(DESTDIR)$(PREFIX)/share/ps2-packer/module
+	$(INSTALL) -m 755 ps2-packer $(DESTDIR)$(PREFIX)/bin
 	PREFIX=$(PREFIX) $(SUBMAKE) stub install
 
 ps2-packer: ps2-packer.c dlopen.c
