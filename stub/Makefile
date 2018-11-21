@@ -1,4 +1,4 @@
-SUBMAKE = MAKE=$(MAKE) $(MAKE) -C
+SUBMAKE = $(MAKE) -C
 
 include $(PS2SDK)/Defs.make
 

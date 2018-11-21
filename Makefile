@@ -1,7 +1,6 @@
 PREFIX = $(PS2DEV)
 
-MAKE = make
-SUBMAKE = MAKE=$(MAKE) $(MAKE) -C
+SUBMAKE = $(MAKE) -C
 SHELL = /bin/sh
 SYSTEM = $(shell uname)
 LIBZA = -lz
