@@ -6,36 +6,39 @@ SYSTEM = $(shell uname)
 LIBZA = -lz
 LIBUCLA = -lucl
 VERSION = 1.1.0
-CC = gcc
 BIN2C = bin2c
 CPPFLAGS = -O3 -Wall -I. -DVERSION=\"$(VERSION)\" -DPREFIX=\"$(PREFIX)\"
 INSTALL = install
 
 ifeq ($(SYSTEM),Darwin)
-CPPFLAGS += -D__APPLE__
-SHARED = -dynamiclib
-SHAREDSUFFIX = .dylib
-EXECSUFFIX =
-CC = /usr/bin/gcc
-CPPFLAGS += -I/opt/local/include -L/opt/local/lib
-DIST_PACK_CMD = tar cvfz
-DIST_PACK_EXT = .tar.gz
-LDFLAGS = -ldl
+	CPPFLAGS += -D__APPLE__
+	SHARED = -dynamiclib
+	SHAREDSUFFIX = .dylib
+	CC = /usr/bin/gcc
+	CPPFLAGS += -I/opt/local/include -L/opt/local/lib
 else ifeq ($(OS),Windows_NT)
-SHARED = -shared
-SHAREDSUFFIX = .dll
-EXECSUFFIX = .exe
-DIST_PACK_CMD = zip -9
-DIST_PACK_EXT = .zip
-LDFLAGS = #Libdl is built into glibc for both Cygwin and MinGW.
-else
-SHARED = -shared
-SHAREDSUFFIX = .so
-EXECSUFFIX =
-DIST_PACK_CMD = tar cvfz
-DIST_PACK_EXT = .tar.gz
-LDFLAGS = -ldl
+	SHAREDSUFFIX = .dll
+	EXECSUFFIX = .exe
+	DIST_PACK_CMD = zip -9
+	DIST_PACK_EXT = .zip
+	LDFLAGS = #Libdl is built into glibc for both Cygwin and MinGW.
+else ifeq ($(findstring BSD, $(SYSTEM)), BSD)
+	ifeq ($(SYSTEM),NetBSD)
+		CPPFLAGS += -I/usr/pkg/include -L/usr/pkg/lib  -R/usr/pkg/lib
+	else
+		CPPFLAGS += -I/usr/local/include -L/usr/local/lib
+	endif
+	CC = cc
+	LDFLAGS =
 endif
+
+CC ?= gcc
+SHARED ?= -shared
+SHAREDSUFFIX ?= .so
+EXECSUFFIX ?=
+DIST_PACK_CMD ?= tar cvfz
+DIST_PACK_EXT ?= .tar.gz
+LDFLAGS ?= -ldl
 
 PACKERS = zlib-packer lzo-packer n2b-packer n2d-packer n2e-packer null-packer
 
