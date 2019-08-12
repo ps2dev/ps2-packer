@@ -3,6 +3,8 @@ stub/*-stub
 *.so
 *.stamp
 *.a
+builtin_stub.c
+builtin_stub_one.c
 ps2-packer
 ps2-packer-lite
 # TODO: OS X build products (.dsym, .dylib, etc)
