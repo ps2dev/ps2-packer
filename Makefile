@@ -40,7 +40,7 @@ DIST_PACK_CMD ?= tar cvfz
 DIST_PACK_EXT ?= .tar.gz
 LDFLAGS ?= -ldl
 
-PACKERS = zlib-packer lzo-packer n2b-packer n2d-packer n2e-packer null-packer
+PACKERS = zlib-packer lzo-packer lz4-packer n2b-packer n2d-packer n2e-packer null-packer
 
 all: ps2-packer ps2-packer-lite packers stubs
 
@@ -82,6 +82,9 @@ zlib-packer$(SHAREDSUFFIX): zlib-packer.c
 
 lzo-packer$(SHAREDSUFFIX): lzo-packer.c minilzo.c
 	$(CC) -fPIC $(CPPFLAGS) lzo-packer.c minilzo.c $(SHARED) -o lzo-packer$(SHAREDSUFFIX)
+
+lz4-packer$(SHAREDSUFFIX): lz4-packer.c stub/lz4/lz4.c stub/lz4/lz4hc.c
+	$(CC) -fPIC $(CPPFLAGS) -Istub/lz4 lz4-packer.c stub/lz4/lz4.c stub/lz4/lz4hc.c $(SHARED) -o lz4-packer$(SHAREDSUFFIX)
 
 n2b-packer$(SHAREDSUFFIX): n2b-packer.c
 	$(CC) -fPIC $(CPPFLAGS) n2b-packer.c $(SHARED) -o n2b-packer$(SHAREDSUFFIX) $(LIBUCLA)
