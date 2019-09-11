@@ -75,6 +75,7 @@ Changelog
   2013/11/23: update to miniLZO version 2.06
   2018/08/22: Various bugfixes.
               tagging as 1.1
+  2019/09/11: Add LZ4 compression
 
 Todo
 ----
@@ -102,6 +103,14 @@ Some facts
 166044 - ps2menu-n2d.elf
 164124 - ps2menu-n2e.elf
 163088 - ps2menu-asm-n2e.elf
+
+2300752 - opl_stripped.elf
+1507004 - OPNPS2LD-lzo.ELF
+1278356 - OPNPS2LD-lz4.ELF
+1108595 - OPNPS2LD-zlib.ELF
+1107084 - OPNPS2LD-n2b.ELF
+1091020 - OPNPS2LD-n2d.ELF
+1083928 - OPNPS2LD-n2e.ELF
 
 
 History
