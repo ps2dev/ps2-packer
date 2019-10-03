@@ -5,6 +5,8 @@ SHELL = /bin/sh
 SYSTEM = $(shell uname)
 LIBZA = -lz
 LIBUCLA = -lucl
+LIBLZMAA = lzma/lzma.a
+LZMA_CPPFLAGS = -I common/lzma
 VERSION = 1.1.0
 BIN2C = $(PS2SDK)/bin/bin2c
 CPPFLAGS = -O3 -Wall -I. -DVERSION=\"$(VERSION)\" -DPREFIX=\"$(PREFIX)\"
@@ -40,7 +42,7 @@ DIST_PACK_CMD ?= tar cvfz
 DIST_PACK_EXT ?= .tar.gz
 LDFLAGS ?= -ldl
 
-PACKERS = zlib-packer lzo-packer lz4-packer n2b-packer n2d-packer n2e-packer null-packer
+PACKERS = zlib-packer lzo-packer lz4-packer lzma-packer n2b-packer n2d-packer n2e-packer null-packer
 
 all: ps2-packer ps2-packer-lite packers stubs
 
@@ -69,6 +71,12 @@ builtin_stub.c: stubs-tag.stamp
 	$(BIN2C) b_stub builtin_stub.c builtin_stub
 	rm b_stub
 
+lzma: lzma-tag.stamp
+
+lzma-tag.stamp:
+	$(SUBMAKE) lzma
+	touch lzma-tag.stamp
+
 stubs: stubs-tag.stamp
 
 stubs-tag.stamp:
@@ -85,6 +93,9 @@ lzo-packer$(SHAREDSUFFIX): lzo-packer.c minilzo.c
 
 lz4-packer$(SHAREDSUFFIX): lz4-packer.c stub/lz4/lz4.c stub/lz4/lz4hc.c
 	$(CC) -fPIC $(CPPFLAGS) -Istub/lz4 lz4-packer.c stub/lz4/lz4.c stub/lz4/lz4hc.c $(SHARED) -o lz4-packer$(SHAREDSUFFIX)
+
+lzma-packer$(SHAREDSUFFIX): lzma lzma-packer.c
+	$(CC) -fPIC $(CPPFLAGS) $(LZMA_CPPFLAGS) lzma-packer.c $(SHARED) -o lzma-packer$(SHAREDSUFFIX) $(LIBLZMAA)
 
 n2b-packer$(SHAREDSUFFIX): n2b-packer.c
 	$(CC) -fPIC $(CPPFLAGS) n2b-packer.c $(SHARED) -o n2b-packer$(SHAREDSUFFIX) $(LIBUCLA)
@@ -107,6 +118,8 @@ stubs-dist:
 
 clean:
 	rm -f ps2-packer ps2-packer-lite ps2-packer.exe ps2-packer-lite.exe *.zip *.gz *.dll builtin_stub.c builtin_stub_one.c *$(SHAREDSUFFIX) *.o
+	$(SUBMAKE) lzma clean
+	rm -f lzma-tag.stamp
 	$(SUBMAKE) stub clean
 	rm -f stubs-tag.stamp
 
