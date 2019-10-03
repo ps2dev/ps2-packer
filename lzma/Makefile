@@ -2,9 +2,16 @@ OBJS_DIR = obj/
 LIB_DIR =
 SRC_DIR = ../common/lzma/
 
-CPPFLAGS += -fPIC -I $(SRC_DIR) -D_7ZIP_ST
+CPPFLAGS += -fPIC -I $(SRC_DIR)
 
 OBJS = Alloc.o LzFind.o LzmaDec.o LzmaEnc.o
+
+LZMA_MT ?= 1
+ifeq ($(LZMA_MT),1)
+	OBJS += LzFindMt.o MtCoder.o MtDec.o Threads.o
+else
+	CPPFLAGS += -D_7ZIP_ST
+endif
 
 OBJS := $(OBJS:%=$(OBJS_DIR)%)
 
