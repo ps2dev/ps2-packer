@@ -56,7 +56,7 @@ install: all
 	$(INSTALL) -d $(DESTDIR)$(PREFIX)/share/ps2-packer/stub
 	$(INSTALL) -m 755 ps2-packer $(DESTDIR)$(PREFIX)/bin
 	$(INSTALL) -m 755 $(addsuffix $(SHAREDSUFFIX),$(PACKERS)) $(DESTDIR)$(PREFIX)/share/ps2-packer/module
-	$(INSTALL) -m 755 ps2-packer $(DESTDIR)$(PREFIX)/bin
+	$(INSTALL) -m 755 ps2-packer-lite $(DESTDIR)$(PREFIX)/bin
 	PREFIX=$(PREFIX) $(SUBMAKE) stub install
 
 ps2-packer: ps2-packer.c dlopen.c
