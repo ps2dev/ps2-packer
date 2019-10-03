@@ -240,9 +240,9 @@ void show_usage() {
 	"    -b base        sets the loading base of the compressed data. When activated\n"
 	"                     it will activate the alternative packing way.\n"
 #ifndef PS2_PACKER_LITE
-        "    -p packer      sets a packer name. n2e by default.\n"
-	"    -s stub        sets another uncruncher stub. stub/n2e-asm-1d00-stub,\n"
-	"                     or stub/n2e-0088-stub when using alternative packing.\n"
+        "    -p packer      sets a packer name. lzma by default.\n"
+	"    -s stub        sets another uncruncher stub. stub/lzma-1d00-stub by default,\n"
+	"                     or stub/lzma-0088-stub when using alternative packing.\n"
 #endif
 	"    -r reload      sets a reload base of the stub. Beware, that will only works\n"
 	"                     with the special asm stubs.\n"
@@ -331,7 +331,6 @@ int count_sections(FILE * stub) {
 }
 
 #ifdef PS2_PACKER_LITE
-extern u8 builtin_stub_one[];
 extern u8 builtin_stub[];
 #endif
 
@@ -358,11 +357,7 @@ void load_stub(
       printe("fread error\n");
     }
 #else
-    if (sections == 1) {
-	loadbuf = builtin_stub_one;
-    } else {
-	loadbuf = builtin_stub;
-    }
+    loadbuf = builtin_stub;
 #endif
 
     eh = (elf_header_t *)loadbuf;
@@ -756,7 +751,7 @@ int main(int argc, char ** argv) {
 
 #ifndef PS2_PACKER_LITE
     if (!packer_name) {
-	packer_name = "n2e";
+	packer_name = "lzma";
     }
 
     if (!stub_name) {
@@ -807,8 +802,6 @@ int main(int argc, char ** argv) {
     }
 
     packer_dll = strdup(buffer);
-#else
-    use_asm_n2e = ((sections == 1) ? 2 : 1);
 #endif
 
     printf("Compressing %s...\n", in_name);

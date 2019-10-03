@@ -66,16 +66,11 @@ uninstall:
 ps2-packer: ps2-packer.c dlopen.c
 	$(CC) $(CPPFLAGS) ps2-packer.c dlopen.c $(LDFLAGS) -o ps2-packer$(EXECSUFFIX)
 
-ps2-packer-lite: ps2-packer.c builtin_stub_one.o builtin_stub.o
-	$(CC) $(CPPFLAGS) -DPS2_PACKER_LITE ps2-packer.c n2e-packer.c $(LIBUCLA) builtin_stub_one.o builtin_stub.o $(LDFLAGS) -o ps2-packer-lite$(EXECSUFFIX)
-
-builtin_stub_one.c: stubs-tag.stamp
-	cp stub/n2e-asm-one-1d00-stub ./b_stub_one
-	$(BIN2C) b_stub_one builtin_stub_one.c builtin_stub_one
-	rm b_stub_one
+ps2-packer-lite: ps2-packer.c builtin_stub.o lzma
+	$(CC) $(CPPFLAGS) $(LZMA_CPPFLAGS) -DPS2_PACKER_LITE ps2-packer.c lzma-packer.c $(LIBLZMAA) builtin_stub.o $(LDFLAGS) -o ps2-packer-lite$(EXECSUFFIX)
 
 builtin_stub.c: stubs-tag.stamp
-	cp stub/n2e-asm-1d00-stub ./b_stub
+	cp stub/lzma-1d00-stub ./b_stub
 	$(BIN2C) b_stub builtin_stub.c builtin_stub
 	rm b_stub
 
@@ -125,7 +120,7 @@ stubs-dist:
 	$(SUBMAKE) stub dist
 
 clean:
-	rm -f ps2-packer ps2-packer-lite ps2-packer.exe ps2-packer-lite.exe *.zip *.gz *.dll builtin_stub.c builtin_stub_one.c *$(SHAREDSUFFIX) *.o
+	rm -f ps2-packer ps2-packer-lite ps2-packer.exe ps2-packer-lite.exe *.zip *.gz *.dll builtin_stub.c *$(SHAREDSUFFIX) *.o
 	$(SUBMAKE) lzma clean
 	rm -f lzma-tag.stamp
 	$(SUBMAKE) stub clean

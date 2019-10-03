@@ -5,9 +5,9 @@ Overview
 --------
 
   This is the lite version of PS2-Packer. See README.txt for full details
-about that software. This lite version only comes with built-in ucl n2e packer
-and unpackers. That means you don't need any external file to use it, if you
-only want to use the n2e compression, which is what most people want to do
+about that software. This lite version only comes with built-in lzma packer
+and unpacker. That means you don't need any external file to use it, if you
+only want to use the lzma compression, which is what most people want to do
 anyway. This is also a request, to resolve cygwin's path problems.
 
 
