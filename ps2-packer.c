@@ -571,7 +571,7 @@ void packing(FILE * out, FILE * in, u32 base, int use_asm_n2e) {
 #endif
 	psh.compressedSize = packed_size;
 
-	printv("Section packed, from %u to %u bytes, ratio = %5.2f%%\n", section_size, packed_size, 100.0 * (section_size - packed_size) / section_size);
+	printv("Section packed, from %u to %u bytes, ratio = %5.2f%%\n", section_size, packed_size, 100.0 * (int) (section_size - packed_size) / section_size);
 
 	SWAP_PACKED_SECTION_HEADER(psh);
 	if (use_asm_n2e == 2) {  // we don't need compressed size
