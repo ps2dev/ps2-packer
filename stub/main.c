@@ -19,7 +19,7 @@ static void fast_memzero(u8 * ptr, u32 size) {
 	"\tnop\n"
 	"\tnop\n"
 	"\tsb        $0, 0(%1)\n"
-	"\tsltu      %2, %0, %1\n"
+	"\tsltu      %2, %1, %0\n"
 	"\taddiu     %1, 1\n"
 	"\tbnez      %2, 1b\n"
 	: "=r" (t) : "r" (ptr), "r" (size)
