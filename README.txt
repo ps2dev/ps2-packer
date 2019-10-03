@@ -7,7 +7,8 @@ Overview
   Just like UPX http://upx.sourceforge.net/ this tool is designed to help you
 create packed ELF to run on the PS2. It has a modular design, so anybody can
 write any kind of module to it. It actually has a zlib module, a lzo module,
-three ucl modules (n2b, n2d and n2e) and a null module, for demo purpose only.
+a lz4 module, a lzma module, three ucl modules (n2b, n2d and n2e) and a null
+module, for demo purpose only.
 
 
 Changelog
@@ -158,9 +159,9 @@ How it works
     -v             verbose mode.
     -b base        sets the loading base of the compressed data. When activated
                       it will activate the alternative packing way. See below.
-    -p packer      sets a packer name. n2e by default.
-    -s stub        sets another uncruncher stub. stub/n2e-1d00-stub by default,
-                      or stub/n2e-0088-stub when using alternative packing.
+    -p packer      sets a packer name. lzma by default.
+    -s stub        sets another uncruncher stub. stub/lzma-1d00-stub by default,
+                      or stub/lzma-0088-stub when using alternative packing.
     -r reload      sets a reload base of the stub. Beware, that will only works
                       with the special asm stubs.
     -a align       sets section alignment. 16 by default. Any value accepted.
