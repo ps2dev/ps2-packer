@@ -13,7 +13,7 @@ endif
 LZMA_CPPFLAGS = -I common/lzma
 VERSION = 1.1.0
 BIN2C = $(PS2SDK)/bin/bin2c
-CPPFLAGS = -O3 -Wall -I. -DVERSION=\"$(VERSION)\" -DPREFIX=\"$(PREFIX)\"
+CPPFLAGS := -O3 -Wall -I. -DVERSION=\"$(VERSION)\" -DPREFIX=\"$(PREFIX)\" $(CPPFLAGS)
 INSTALL = install
 
 ifeq ($(SYSTEM),Darwin)
