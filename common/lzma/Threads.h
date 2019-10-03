@@ -5,7 +5,11 @@
 #define __7Z_THRESDS_H
 
 #include "7zTypes.h"
+#ifdef _WIN32
 #include "windows.h"
+#else
+#include "compat_windows.h"
+#endif
 
 #ifdef ENV_BEOS
 #include <kernel/OS.h>
@@ -87,6 +91,7 @@ typedef struct _CSemaphore
 } CSemaphore;
 
 #define Semaphore_Construct(p) (p)->_created = 0
+#define Semaphore_IsCreated(p) (p)->_created != 0
 
 WRes Semaphore_Create(CSemaphore *p, UInt32 initiallyCount, UInt32 maxCount);
 WRes Semaphore_ReleaseN(CSemaphore *p, UInt32 num);
