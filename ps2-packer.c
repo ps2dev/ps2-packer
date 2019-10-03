@@ -790,11 +790,12 @@ int main(int argc, char ** argv) {
 
     printf("Compressing %s...\n", in_name);
 
-    printv("Loading stub file.\n");
 #ifndef PS2_PACKER_LITE
+    printv("Loading stub file %s.\n", stub_name);
     load_stub(stub_file);
     fclose(stub_file);
 #else
+    printv("Loading stub file.\n");
     load_stub();
 #endif
 
