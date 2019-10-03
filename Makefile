@@ -6,6 +6,10 @@ SYSTEM = $(shell uname)
 LIBZA = -lz
 LIBUCLA = -lucl
 LIBLZMAA = lzma/lzma.a
+LZMA_MT ?= 1
+ifeq ($(LZMA_MT),1)
+	LIBLZMAA += -lpthread
+endif
 LZMA_CPPFLAGS = -I common/lzma
 VERSION = 1.1.0
 BIN2C = $(PS2SDK)/bin/bin2c
