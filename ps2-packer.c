@@ -375,7 +375,7 @@ void load_stub(
     eph = (elf_pheader_t *)(loadbuf + eh->phoff);
     for (i = 0; i < eh->phnum; i++) {
 	SWAP_ELF_PHEADER(eph[i]);
-        if (eph[i].type != PT_LOAD)
+        if ((eph[i].type != PT_LOAD) || (eph[i].filesz == 0))
             continue;
 
         pdata = (loadbuf + eph[i].offset);
@@ -531,7 +531,7 @@ void packing(FILE * out, FILE * in, u32 base, int use_asm_n2e) {
     /* counting and swapping the program headers of the input file */
     for (i = 0; i < eh->phnum; i++) {
 	SWAP_ELF_PHEADER(eph[i]);
-        if (eph[i].type != PT_LOAD)
+        if ((eph[i].type != PT_LOAD) || (eph[i].filesz == 0))
             continue;
 	ph.numSections++;
     }
