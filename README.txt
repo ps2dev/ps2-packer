@@ -76,6 +76,7 @@ Changelog
   2018/08/22: Various bugfixes.
               tagging as 1.1
   2019/09/11: Add LZ4 compression
+  2019/10/03: Add LZMA compression
 
 Todo
 ----
@@ -104,13 +105,14 @@ Some facts
 164124 - ps2menu-n2e.elf
 163088 - ps2menu-asm-n2e.elf
 
-2300752 - opl_stripped.elf
-1507004 - OPNPS2LD-lzo.ELF
-1278356 - OPNPS2LD-lz4.ELF
-1108595 - OPNPS2LD-zlib.ELF
-1107084 - OPNPS2LD-n2b.ELF
-1091020 - OPNPS2LD-n2d.ELF
-1083928 - OPNPS2LD-n2e.ELF
+2305808 - opl_stripped.elf
+1508556 - OPNPS2LD-lzo.ELF
+1279220 - OPNPS2LD-lz4.ELF
+1109555 - OPNPS2LD-zlib.ELF
+1107884 - OPNPS2LD-n2b.ELF
+1091868 - OPNPS2LD-n2d.ELF
+1084760 - OPNPS2LD-n2e.ELF
+ 827460 - OPNPS2LD-lzma.ELF
 
 
 History
