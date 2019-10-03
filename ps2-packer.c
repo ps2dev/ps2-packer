@@ -685,11 +685,11 @@ int main(int argc, char ** argv) {
 		"hvr:", long_options, NULL)) != EOF) {
 	switch (c) {
 	case 'b':
-	    base = strtol(optarg, NULL, 0);
+	    base = strtoul(optarg, NULL, 0);
 	    alternative = 1;
 	    break;
 	case 'a':
-	    alignment = strtol(optarg, NULL, 0);
+	    alignment = strtoul(optarg, NULL, 0);
 	    break;
 #ifndef PS2_PACKER_LITE
 	case 'p':
@@ -700,7 +700,7 @@ int main(int argc, char ** argv) {
 	    break;
 #endif
 	case 'r':
-	    reload = strtol(optarg, NULL, 0);
+	    reload = strtoul(optarg, NULL, 0);
 	    break;
 	case 'v':
 	    verbose = 1;
