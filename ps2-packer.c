@@ -41,6 +41,10 @@
 #define snprintf(buffer, size, args...) sprintf(buffer, args)
 #endif
 
+#ifdef __MINGW32__
+#include <windows.h>
+#endif
+
 /* These global variables should contain the data about the loaded stub */
 u8 * stub_section;
 u32 * stub_data;
@@ -665,11 +669,13 @@ int main(int argc, char ** argv) {
     u32 size_in, size_out;
     int use_asm_n2e = 0;
     char * pwd;
+    char pwd_buf[BUFSIZ + 1];
 
     sanity_checks();
 
     show_banner();
 
+    strncpy(pwd_buf, argv[0], BUFSIZ);
     if ((pwd = strrchr(argv[0], '/'))) {
 	*pwd = 0;
     } else if ((pwd = strrchr(argv[0], '\\'))) {
@@ -677,6 +683,15 @@ int main(int argc, char ** argv) {
     }
 
     pwd = argv[0];
+#ifdef __MINGW32__
+    if (strcmp(pwd_buf, argv[0]) == 0) {
+        if (GetModuleFileName(NULL, pwd_buf, BUFSIZ)) {
+            if ((pwd = strrchr(pwd_buf, '\\')))
+                *pwd = 0;
+            pwd = pwd_buf;
+        }
+    }
+#endif
 
     while ((c = getopt_long(argc, argv, "b:a:"
 #ifndef PS2_PACKER_LITE
@@ -766,7 +781,10 @@ int main(int argc, char ** argv) {
     if (!file_exists(stub_name)) {
         snprintf(buffer, BUFSIZ, PREFIX "/share/ps2-packer/%s", stub_name);
 	if (!file_exists(buffer)) {
+    	    snprintf(buffer, BUFSIZ, "%s/../share/ps2-packer/%s", pwd, stub_name);
+	if (!file_exists(buffer)) {
     	    snprintf(buffer, BUFSIZ, "%s/%s", pwd, stub_name);
+        }
         }
 	free(stub_name);
 	stub_name = strdup(buffer);
@@ -778,9 +796,12 @@ int main(int argc, char ** argv) {
 
     snprintf(buffer, BUFSIZ, PREFIX "/share/ps2-packer/module/%s-packer" SUFFIX, packer_name);
     if (!file_exists(buffer)) {
+    snprintf(buffer, BUFSIZ, "%s/../share/ps2-packer/module/%s-packer" SUFFIX, pwd, packer_name);
+    if (!file_exists(buffer)) {
 	snprintf(buffer, BUFSIZ, "%s/%s-packer" SUFFIX, pwd, packer_name);
 	if (!file_exists(buffer))
 	    snprintf(buffer, BUFSIZ, "./%s-packer" SUFFIX, packer_name);
+    }
     }
 
     packer_dll = strdup(buffer);
