@@ -59,6 +59,10 @@ install: all
 	$(INSTALL) -m 755 ps2-packer-lite $(DESTDIR)$(PREFIX)/bin
 	PREFIX=$(PREFIX) $(SUBMAKE) stub install
 
+uninstall:
+	rm -f $(DESTDIR)$(PREFIX)/bin/ps2-packer$(EXECSUFFIX) $(DESTDIR)$(PREFIX)/bin/ps2-packer-lite$(EXECSUFFIX)
+	rm -rf $(DESTDIR)$(PREFIX)/share/ps2-packer
+
 ps2-packer: ps2-packer.c dlopen.c
 	$(CC) $(CPPFLAGS) ps2-packer.c dlopen.c $(LDFLAGS) -o ps2-packer$(EXECSUFFIX)
 
