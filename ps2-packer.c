@@ -671,6 +671,8 @@ int main(int argc, char ** argv) {
     char * pwd;
     char pwd_buf[BUFSIZ + 1];
 
+    setbuf(stdout, NULL);
+
     sanity_checks();
 
     show_banner();
