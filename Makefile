@@ -21,7 +21,7 @@ ifeq ($(SYSTEM),Darwin)
 	SHARED = -dynamiclib
 	SHAREDSUFFIX = .dylib
 	CC = /usr/bin/gcc
-	CPPFLAGS += -I/opt/local/include -L/opt/local/lib
+	CPPFLAGS += -I/usr/local/include -L/usr/local/lib
 else ifeq ($(OS),Windows_NT)
 	SHAREDSUFFIX = .dll
 	EXECSUFFIX = .exe
