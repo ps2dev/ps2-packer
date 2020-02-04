@@ -260,9 +260,9 @@ void remove_section_zeroes(u8 * section, u32 * section_size, u32 * zeroes) {
     u32 removed = 0;
 
     while (!section[*section_size - 1 - removed]) {
+	removed++;
 	if (*section_size == removed)
 	    break;
-	removed++;
     }
 
 #if 0
