@@ -2,7 +2,7 @@ SUBMAKE = $(MAKE) -C
 
 include $(PS2SDK)/Defs.make
 
-EE_CPPFLAGS = -G0 -I $(PS2SDK)/ee/include -I $(PS2SDK)/common/include -I . -I zlib -I lzo -I lz4 -I ../common/lzma -I ucl -D_EE -O3 -Wall -DDO_EXECPS2
+EE_CPPFLAGS = -G0 -I $(PS2SDK)/ee/include -I $(PS2SDK)/common/include -I . -I zlib -I lzo -I lz4 -I ../common/lzma -D_EE -O3 -Wall -DDO_EXECPS2
 EE_LDFLAGS = -T ./linkfile -L $(PS2SDK)/ee/lib -lc -lkernel-nopatch
 
 TARGETS = \
@@ -16,13 +16,6 @@ lz4-1d00-stub lz4-0088-stub \
 lz4-kmode-1d00-stub lz4-kmode-0088-stub \
 lzma-1d00-stub lzma-0088-stub \
 lzma-kmode-1d00-stub lzma-kmode-0088-stub \
-n2b-1d00-stub n2b-0088-stub \
-n2b-kmode-1d00-stub n2b-kmode-0088-stub \
-n2d-1d00-stub n2d-0088-stub \
-n2d-kmode-1d00-stub n2d-kmode-0088-stub \
-n2e-1d00-stub n2e-0088-stub \
-n2e-kmode-1d00-stub n2e-kmode-0088-stub \
-n2e-asm-1d00-stub n2e-asm-one-1d00-stub
 
 all: $(TARGETS)
 
@@ -48,19 +41,12 @@ lzma-tag.stamp:
 	$(SUBMAKE) lzma
 	touch lzma-tag.stamp
 
-ucl-tag.stamp:
-	$(SUBMAKE) ucl
-	touch ucl-tag.stamp
-
 
 ZLIB_SIGNATURE = -Wl,--defsym,_signature=0x42494c5a
 NULL_SIGNATURE = -Wl,--defsym,_signature=0x4c4c554e
 LZO_SIGNATURE = -Wl,--defsym,_signature=0x314f5a4c
 LZ4_SIGNATURE = -Wl,--defsym,_signature=0x314fffff
 LZMA_SIGNATURE = -Wl,--defsym,_signature=0x414d5a4c
-N2B_SIGNATURE = -Wl,--defsym,_signature=0x3142324e
-N2D_SIGNATURE = -Wl,--defsym,_signature=0x3144324e
-N2E_SIGNATURE = -Wl,--defsym,_signature=0x3145324e
 
 zlib-0088-stub: main.o zlib-stub.o zlib-tag.stamp
 	$(EE_CC) -nostartfiles ./crt0.s -Wl,--defsym,_start_address=0x0088000 -o zlib-0088-stub main.o zlib-stub.o ./zlib/zlib.a $(EE_LDFLAGS) $(ZLIB_SIGNATURE)
@@ -132,62 +118,12 @@ lzma-kmode-1d00-stub: main-kmode.o lzma-stub.o lzma-tag.stamp
 	$(EE_CC) -nostartfiles ./crt0.s -Wl,--defsym,_start_address=0x1d00000 -o lzma-kmode-1d00-stub main-kmode.o lzma-stub.o ./lzma/lzma.a $(EE_LDFLAGS) $(LZMA_SIGNATURE)
 
 
-n2b-0088-stub: main.o n2b-stub.o ucl-tag.stamp
-	$(EE_CC) -nostartfiles ./crt0.s -Wl,--defsym,_start_address=0x0088000 -o n2b-0088-stub main.o n2b-stub.o ./ucl/ucl.a $(EE_LDFLAGS) $(N2B_SIGNATURE)
-
-n2b-1d00-stub: main.o n2b-stub.o ucl-tag.stamp
-	$(EE_CC) -nostartfiles ./crt0.s -Wl,--defsym,_start_address=0x1d00000 -o n2b-1d00-stub main.o n2b-stub.o ./ucl/ucl.a $(EE_LDFLAGS) $(N2B_SIGNATURE)
-
-
-n2b-kmode-0088-stub: main-kmode.o n2b-stub.o ucl-tag.stamp
-	$(EE_CC) -nostartfiles ./crt0.s -Wl,--defsym,_start_address=0x0088000 -o n2b-kmode-0088-stub main-kmode.o n2b-stub.o ./ucl/ucl.a $(EE_LDFLAGS) $(N2B_SIGNATURE)
-
-n2b-kmode-1d00-stub: main-kmode.o n2b-stub.o ucl-tag.stamp
-	$(EE_CC) -nostartfiles ./crt0.s -Wl,--defsym,_start_address=0x1d00000 -o n2b-kmode-1d00-stub main-kmode.o n2b-stub.o ./ucl/ucl.a $(EE_LDFLAGS) $(N2B_SIGNATURE)
-
-
-n2d-0088-stub: main.o n2d-stub.o ucl-tag.stamp
-	$(EE_CC) -nostartfiles ./crt0.s -Wl,--defsym,_start_address=0x0088000 -o n2d-0088-stub main.o n2d-stub.o ./ucl/ucl.a $(EE_LDFLAGS) $(N2D_SIGNATURE)
-
-n2d-1d00-stub: main.o n2d-stub.o ucl-tag.stamp
-	$(EE_CC) -nostartfiles ./crt0.s -Wl,--defsym,_start_address=0x1d00000 -o n2d-1d00-stub main.o n2d-stub.o ./ucl/ucl.a $(EE_LDFLAGS) $(N2D_SIGNATURE)
-
-
-n2d-kmode-0088-stub: main-kmode.o n2d-stub.o ucl-tag.stamp
-	$(EE_CC) -nostartfiles ./crt0.s -Wl,--defsym,_start_address=0x0088000 -o n2d-kmode-0088-stub main-kmode.o n2d-stub.o ./ucl/ucl.a $(EE_LDFLAGS) $(N2D_SIGNATURE)
-
-n2d-kmode-1d00-stub: main-kmode.o n2d-stub.o ucl-tag.stamp
-	$(EE_CC) -nostartfiles ./crt0.s -Wl,--defsym,_start_address=0x1d00000 -o n2d-kmode-1d00-stub main-kmode.o n2d-stub.o ./ucl/ucl.a $(EE_LDFLAGS) $(N2D_SIGNATURE)
-
-
-n2e-0088-stub: main.o n2e-stub.o ucl-tag.stamp
-	$(EE_CC) -nostartfiles ./crt0.s -Wl,--defsym,_start_address=0x0088000 -o n2e-0088-stub main.o n2e-stub.o ./ucl/ucl.a $(EE_LDFLAGS) $(N2E_SIGNATURE)
-
-n2e-1d00-stub: main.o n2e-stub.o ucl-tag.stamp
-	$(EE_CC) -nostartfiles ./crt0.s -Wl,--defsym,_start_address=0x1d00000 -o n2e-1d00-stub main.o n2e-stub.o ./ucl/ucl.a $(EE_LDFLAGS) $(N2E_SIGNATURE)
-
-
-n2e-kmode-0088-stub: main-kmode.o n2e-stub.o ucl-tag.stamp
-	$(EE_CC) -nostartfiles ./crt0.s -Wl,--defsym,_start_address=0x0088000 -o n2e-kmode-0088-stub main-kmode.o n2e-stub.o ./ucl/ucl.a $(EE_LDFLAGS) $(N2E_SIGNATURE)
-
-n2e-kmode-1d00-stub: main-kmode.o n2e-stub.o ucl-tag.stamp
-	$(EE_CC) -nostartfiles ./crt0.s -Wl,--defsym,_start_address=0x1d00000 -o n2e-kmode-1d00-stub main-kmode.o n2e-stub.o ./ucl/ucl.a $(EE_LDFLAGS) $(N2E_SIGNATURE)
-
-
-n2e-asm-1d00-stub: n2e-asm-stub.S ucl/n2e.S
-	$(EE_CC) -nostartfiles -Wl,--defsym,_start_address=0x1d00000 -o n2e-asm-1d00-stub n2e-asm-stub.S $(EE_LDFLAGS) $(N2E_SIGNATURE) -DARGS_IN_S
-
-n2e-asm-one-1d00-stub: n2e-asm-one-stub.S ucl/n2e.S
-	$(EE_CC) -nostartfiles -Wl,--defsym,_start_address=0x1d00000 -o n2e-asm-one-1d00-stub n2e-asm-one-stub.S $(EE_LDFLAGS) $(N2E_SIGNATURE) -DARGS_IN_S
-
-
 clean:
 	rm -f *.o $(TARGETS) *-tag.stamp
 	$(SUBMAKE) zlib clean
 	$(SUBMAKE) lzo clean
 	$(SUBMAKE) lz4 clean
 	$(SUBMAKE) lzma clean
-	$(SUBMAKE) ucl clean
 
 rebuild: clean all
 
