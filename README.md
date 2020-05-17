@@ -21,35 +21,6 @@ Is being done following a modular design, so anybody can write any kind of modul
   - Write a proper documentation about "how to write new modules".
   - Add RC4 modules.
 
-
-# Some facts
-
-- 180972 - ps2link-embed.elf
-- 105528 - ps2link-embed-lzo.elf
- - 90455 - ps2link-embed-zlib.elf
- - 78856 - ps2link-embed-n2b.elf
- - 78536 - ps2link-embed-n2d.elf
- - 77792 - ps2link-embed-n2e.elf
- - 76768 - ps2link-embed-asm-n2e.elf
-
-- 444240 - ps2menu.elf
-- 239064 - ps2menu-lzo.elf
-- 187927 - ps2menu-zlib.elf
-- 167228 - ps2menu-n2b.elf
-- 166044 - ps2menu-n2d.elf
-- 164124 - ps2menu-n2e.elf
-- 163088 - ps2menu-asm-n2e.elf
-
-- 2305808 - opl_stripped.elf
-- 1508556 - OPNPS2LD-lzo.ELF
-- 1279220 - OPNPS2LD-lz4.ELF
-- 1109555 - OPNPS2LD-zlib.ELF
-- 1107884 - OPNPS2LD-n2b.ELF
-- 1091868 - OPNPS2LD-n2d.ELF
-- 1084760 - OPNPS2LD-n2e.ELF
-- 827460 - OPNPS2LD-lzma.ELF
-
-
 # History
 
 Well, I wrote this piece of junk in one day, because Drakonite said me zlib
@@ -185,7 +156,7 @@ All data written, writing program header.
 Done!
 ```
 
-# Comparating Results
+# Comparing Results
 ```
 $ ls -l ps2menu.elf ps2menu-packed*
 -rw-r--r--    1 pixel    pixel      444240 Aug 12 23:33 ps2menu.elf
