@@ -1,5 +1,7 @@
 # ps2-packer
 
+![CI](https://github.com/ps2dev/ps2-packer/workflows/CI/badge.svg)
+
 # Overview
 
 Just like [UPX](http://upx.sourceforge.net/ "UPX"), this tool is designed to help you
