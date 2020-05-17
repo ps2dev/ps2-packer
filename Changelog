@@ -1,0 +1,64 @@
+  2004/08/03: release of version 0.1, first version.
+              release of version 0.1.1, included zlib, removing bloats :)
+  2004/08/04: disabled the buggy "fast" memzero in the stub
+              worked out an endian independant version.
+	      release of version 0.2 :-P (yeah, okay, okay, a bit too fast...)
+  2004/08/05: commenting the source, putting it into ps2dev's CVS.
+  2004/08/10: removing error messages into zlib, saving a few bytes.
+  2004/08/12: adding module capability to the whole, moved code into modules.
+              adding "null" module as an example.
+	      adding "lzo" module.
+	      tagging as version 0.3b
+	      adding "ucl" modules (n2b, n2d and n2e algos)
+	      tagging as version 0.3b2 (yeah, okay, still a bit fast :D)
+	      changing alignment of data sections to 0x80 instead of the
+	        standard 0x1000. Caution: may break things.
+	      added a small code to remove the extra zeroes at the end of the
+	        section, moving them to bss.
+	      cleaning up ucl's uncrunching source code.
+	      changed default to use n2e algorithm instead of zlib.
+	      changed "memzero" in the stubs to a small asm version.
+	      tagging as 0.3b3 (sigh...)
+  2004/08/13: adding 1d00 stubs
+              adding "alternative" elf packing method
+	      changing packer selection method (using prefix)
+	      tagging as 0.3 (ho well...)
+  2004/08/14: fixed some alignments bugs, added alignment option.
+              changing ExecPS2 in stubs to a more ps2link-friendly thingy,
+	        as a special compilation option
+	      added verbose option :p
+	      added n2e.S, 84 instructions ucl-nrv2e uncompression code.
+	      added a special "one section" ucl-nrv2e asm only stub, used when
+	        the input file has only one section (total of 416 bytes).
+	      added a special "multiple sections" ucl-nrv2e asm only stub, used
+	        the input file has only one section, untested.
+	      tagging as 0.4
+  2004/10/26: finally fixed that damn bss section bug...
+              tagging as 0.4.1
+  2004/11/06: fixed compilation for MacOS X
+              added code to handle modules and stub in global path.
+	      cleaning Makefiles
+	      tagging as 0.4.2
+  2004/11/26: added module search path in argv[0] as well.
+              fixed a multiple-section critical bug.
+	      fixed a bit the asm stub code.
+	      tagging as 0.4.3
+  2004/12/26: added reload option, and used branches instead of jumps in
+                the asm stubs.
+	      created lite version - see README-lite.txt for informations.
+	      tagging as 0.4.4
+  2004/12/27: lkz reported a bug in the lite version only - fixed.
+  2005/03/05: added FlushCache(0); FlushCache(2); to be sure...
+  2005/04/06: added n2e-kmode stub, and changed search path a bit.
+  2005/04/10: fixed a stub loading bug reported by TyRaNiD.
+              added more -kmode stubs.
+	      tagging as 0.4.5
+  2005/11/10: adding a safety fix about zero-sized program headers.
+              tagging as 1.0rc1 since now it's mature enough.
+  2005/11/20: fixed a bug causing a big crash with a zero-only section.
+              tagging as 1.0rc2
+  2013/11/23: update to miniLZO version 2.06
+  2018/08/22: Various bugfixes.
+              tagging as 1.1
+  2019/09/11: Add LZ4 compression
+  2019/10/03: Add LZMA compression
