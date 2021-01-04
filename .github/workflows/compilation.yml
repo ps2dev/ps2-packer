@@ -15,7 +15,7 @@ jobs:
 
     - name: Install dependencies
       run: |
-        apk add build-base zlib-dev ucl-dev
+        apk add build-base zlib-dev
 
     - name: Compile project
       run: |
