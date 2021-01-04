@@ -282,10 +282,11 @@ const ISzAlloc g_BigAlloc = { SzBigAlloc, SzBigFree };
 
 #define MY_ALIGN_PTR_UP_PLUS(p, align) MY_ALIGN_PTR_DOWN(((char *)(p) + (align) + ADJUST_ALLOC_SIZE), align)
 
-
+/*
 #if (_POSIX_C_SOURCE >= 200112L) && !defined(_WIN32)
   #define USE_posix_memalign
 #endif
+*/
 
 /*
   This posix_memalign() is for test purposes only.

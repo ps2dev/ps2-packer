@@ -4,7 +4,6 @@ SUBMAKE = $(MAKE) -C
 SHELL = /bin/sh
 SYSTEM = $(shell uname)
 LIBZA = -lz
-LIBUCLA = -lucl
 LIBLZMAA = lzma/lzma.a
 LZMA_MT ?= 1
 ifeq ($(LZMA_MT),1)
@@ -46,7 +45,7 @@ DIST_PACK_CMD ?= tar cvfz
 DIST_PACK_EXT ?= .tar.gz
 LDFLAGS ?= -ldl
 
-PACKERS = zlib-packer lzo-packer lz4-packer lzma-packer n2b-packer n2d-packer n2e-packer null-packer
+PACKERS = zlib-packer lzo-packer lz4-packer lzma-packer null-packer
 
 all: ps2-packer ps2-packer-lite packers stubs
 
@@ -100,15 +99,6 @@ lz4-packer$(SHAREDSUFFIX): lz4-packer.c stub/lz4/lz4.c stub/lz4/lz4hc.c
 lzma-packer$(SHAREDSUFFIX): lzma lzma-packer.c
 	$(CC) -fPIC $(CPPFLAGS) $(LZMA_CPPFLAGS) lzma-packer.c $(SHARED) -o lzma-packer$(SHAREDSUFFIX) $(LIBLZMAA)
 
-n2b-packer$(SHAREDSUFFIX): n2b-packer.c
-	$(CC) -fPIC $(CPPFLAGS) n2b-packer.c $(SHARED) -o n2b-packer$(SHAREDSUFFIX) $(LIBUCLA)
-
-n2d-packer$(SHAREDSUFFIX): n2d-packer.c
-	$(CC) -fPIC $(CPPFLAGS) n2d-packer.c $(SHARED) -o n2d-packer$(SHAREDSUFFIX) $(LIBUCLA)
-
-n2e-packer$(SHAREDSUFFIX): n2e-packer.c
-	$(CC) -fPIC $(CPPFLAGS) n2e-packer.c $(SHARED) -o n2e-packer$(SHAREDSUFFIX) $(LIBUCLA)
-
 null-packer$(SHAREDSUFFIX): null-packer.c
 	$(CC) -fPIC $(CPPFLAGS) null-packer.c $(SHARED) -o null-packer$(SHAREDSUFFIX)
 
@@ -138,7 +128,7 @@ dist: all COPYING stubs-dist README.txt ps2-packer.c $(addsuffix .c,$(PACKERS))
 	strip ps2-packer$(EXECSUFFIX) ps2-packer-lite$(EXECSUFFIX) $(addsuffix $(SHAREDSUFFIX),$(PACKERS))
 	$(DIST_PACK_CMD) ps2-packer-$(VERSION)$(DIST_PACK_EXT) ps2-packer$(EXECSUFFIX) $(addsuffix $(SHAREDSUFFIX),$(PACKERS)) COPYING stub/*stub README.txt
 	$(DIST_PACK_CMD) ps2-packer-lite-$(VERSION)$(DIST_PACK_EXT) ps2-packer-lite$(EXECSUFFIX) COPYING README.txt README-lite.txt
-	tar cvfz ps2-packer-$(VERSION)-src.tar.gz *.{c,h} Makefile COPYING stub/{Makefile,crt0.s,linkfile,*.{c,h,S}} stub/ucl/*.S stub/{zlib,lzo,ucl}/{Makefile,*.{c,h}} README.txt README-lite.txt
+	tar cvfz ps2-packer-$(VERSION)-src.tar.gz *.{c,h} Makefile COPYING stub/{Makefile,crt0.s,linkfile,*.{c,h,S}} stub/{zlib,lzo}/{Makefile,*.{c,h}} README.txt README-lite.txt
 
 redist: clean dist
 
