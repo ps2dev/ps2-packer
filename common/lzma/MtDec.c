@@ -5,7 +5,7 @@
 
 // #define SHOW_DEBUG_INFO
 
-// #include <stdio.h>
+#include <string.h>
 
 #ifdef SHOW_DEBUG_INFO
 #include <stdio.h>
