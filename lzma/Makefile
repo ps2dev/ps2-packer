@@ -2,7 +2,7 @@ OBJS_DIR = obj/
 LIB_DIR =
 SRC_DIR = ../common/lzma/
 
-CPPFLAGS += -fPIC -I $(SRC_DIR)
+CPPFLAGS += -fPIC -I $(SRC_DIR) -D_7ZIP_AFFINITY_DISABLE
 
 OBJS = Alloc.o LzFind.o LzmaDec.o LzmaEnc.o
 

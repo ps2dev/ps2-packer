@@ -130,8 +130,8 @@ typedef int WRes;
 */
 
 // gcc / clang : (sizeof(long) == sizeof(void*)) in 32/64 bits
-typedef          long INT_PTR;
-typedef unsigned long UINT_PTR;
+//typedef          long INT_PTR;
+//typedef unsigned long UINT_PTR;
 
 #define TEXT(quote) quote
 

@@ -287,7 +287,7 @@ const ISzAlloc g_BigAlloc = { SzBigAlloc, SzBigFree };
 #define MY_ALIGN_PTR_DOWN(p, align) ((void *)((((UIntPtr)(p)) & ~((UIntPtr)(align) - 1))))
 
 
-#if !defined(_WIN32) && defined(_POSIX_C_SOURCE) && (_POSIX_C_SOURCE >= 200112L)
+#if !defined(_WIN32) && !defined(_EE) && defined(_POSIX_C_SOURCE) && (_POSIX_C_SOURCE >= 200112L)
   #define USE_posix_memalign
 #endif
 
