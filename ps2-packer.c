@@ -54,8 +54,6 @@ u32 stub_size;  /* Size of the stub section */
 u32 stub_zero;  /* Number of bytes to zero-pad at the end of the section */
 u32 stub_signature; /* packer signature located in the stub */
 
-u32 reload = 0;
-
 u8 alternative = 0; /* boolean for alternative loading method */
 u32 alignment = 0x10;
 
@@ -67,7 +65,6 @@ u32 data_pointer;
 struct option long_options[] = {
     {"help",    0, NULL, 'h'},
     {"base",    1, NULL, 'b'},
-    {"reload",  1, NULL, 'r'},
 #ifndef PS2_PACKER_LITE
     {"packer",  1, NULL, 'p'},
     {"stub",    1, NULL, 's'},
@@ -232,7 +229,7 @@ void show_usage() {
 #ifndef PS2_PACKER_LITE
 	"[-p X] [-s X] "
 #endif
-	"[-r X] <in_elf> <out_elf>\n"
+	"<in_elf> <out_elf>\n"
 	"    -h             show this help.\n"
 	"    -v             verbose mode.\n"
 	"    -b base        sets the loading base of the compressed data. When activated\n"
@@ -242,8 +239,6 @@ void show_usage() {
 	"    -s stub        sets another uncruncher stub. stub/lzma-1d00-stub by default,\n"
 	"                     or stub/lzma-0088-stub when using alternative packing.\n"
 #endif
-	"    -r reload      sets a reload base of the stub. Beware, that will only works\n"
-	"                     with the special asm stubs.\n"
 	"    -a align       sets section alignment. 16 by default. Any value accepted.\n"
     );
 }
@@ -344,10 +339,6 @@ void load_stub(
 
 	stub_base = eph[i].vaddr;
 	stub_zero = eph[i].memsz - eph[i].filesz;
-
-	if (reload != 0)
-	    stub_base = reload;
-
 
 	loaded = 1;
 	break;
@@ -641,7 +632,7 @@ int main(int argc, char ** argv) {
 #ifndef PS2_PACKER_LITE
 	        "p:s:"
 #endif
-		"hvr:", long_options, NULL)) != EOF) {
+		"hv", long_options, NULL)) != EOF) {
 	switch (c) {
 	case 'b':
 	    base = strtoul(optarg, NULL, 0);
@@ -658,9 +649,6 @@ int main(int argc, char ** argv) {
 	    stub_name = strdup(optarg);
 	    break;
 #endif
-	case 'r':
-	    reload = strtoul(optarg, NULL, 0);
-	    break;
 	case 'v':
 	    verbose = 1;
 	    break;

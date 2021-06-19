@@ -54,7 +54,7 @@ genuine ps2dev website, that is, http://ps2dev.org
 
 # How it works
 ```
-  Usage: ps2-packer [-v] [-b X] [-p X] [-s X] [-a X] [-r X] <in_elf> <out_elf>
+  Usage: ps2-packer [-v] [-b X] [-p X] [-s X] [-a X] <in_elf> <out_elf>
   
   Options description:
     -v             verbose mode.
@@ -63,8 +63,6 @@ genuine ps2dev website, that is, http://ps2dev.org
     -p packer      sets a packer name. lzma by default.
     -s stub        sets another uncruncher stub. stub/lzma-1d00-stub by default,
                       or stub/lzma-0088-stub when using alternative packing.
-    -r reload      sets a reload base of the stub. Beware, that will only works
-                      with the special asm stubs.
     -a align       sets section alignment. 16 by default. Any value accepted.
                       However, here is a list of alignments to know:
 		1 - no alignment, risky, shouldn't work.
@@ -85,9 +83,6 @@ will be forced to reside at a certain location. That's the alternative packing
 method. The output elf will contain two program sections. The first one will
 be the uncruncher stub. The second section contains the packed data, loaded at
 the address you specified.
-
-  The reload option is meant to forcibily relink the stub to another address.
-This will only work with the asm stubs though; be careful when using it.
 
   So, depending on your needs, just move the data around, to get the desired
 results.
