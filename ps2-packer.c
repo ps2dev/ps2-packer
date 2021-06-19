@@ -59,8 +59,6 @@ u32 reload = 0;
 u8 alternative = 0; /* boolean for alternative loading method */
 u32 alignment = 0x10;
 
-int sections;
-
 /*
   This is the pointer in our output elf file.
 */
@@ -292,44 +290,6 @@ void realign_data_pointer() {
     }
 }
 
-int count_sections(FILE * stub) {
-    u8 * loadbuf;
-    int size;
-    int i;
-    elf_header_t *eh = 0;
-    elf_pheader_t *eph = 0;
-    int r = 0;
-
-    fseek(stub, 0, SEEK_END);
-    size = ftell(stub);
-    fseek(stub, 0, SEEK_SET);
-
-    loadbuf = (u8 *) malloc(size);
-    if (fread(loadbuf, 1, size, stub) != size) {
-      printe("fread error\n");
-    }
-
-    eh = (elf_header_t *)loadbuf;
-    SWAP_ELF_HEADER((*eh));
-    if (memcmp(eh->ident, &ELF_MAGIC, sizeof(ELF_MAGIC)) != 0) {
-        printe("This ain't no ELF file\n");
-    }
-
-    /* Parsing the interesting program headers */
-    eph = (elf_pheader_t *)(loadbuf + eh->phoff);
-    for (i = 0; i < eh->phnum; i++) {
-	SWAP_ELF_PHEADER(eph[i]);
-        if ((eph[i].type != PT_LOAD) || (eph[i].filesz == 0))
-            continue;
-
-	r++;
-    }
-
-    free(loadbuf);
-
-    return r;
-}
-
 #ifdef PS2_PACKER_LITE
 extern u8 builtin_stub[];
 #endif
@@ -482,7 +442,7 @@ void prepare_out(FILE * out, u32 base) {
 
 /* Will produce the second program section of the elf, by packing all the
    program headers of the input file */
-void packing(FILE * out, FILE * in, u32 base, int use_asm_n2e) {
+void packing(FILE * out, FILE * in, u32 base) {
     u8 * loadbuf, * pdata, * packed = 0;
     int size, packed_size = 0;
     u32 section_size;
@@ -538,15 +498,9 @@ void packing(FILE * out, FILE * in, u32 base, int use_asm_n2e) {
     weph.filesz = 0;
     fseek(out, data_pointer, SEEK_SET);
     SWAP_PACKED_HEADER(ph);
-    if (use_asm_n2e == 2) {  // only one section
-	if (fwrite(&ph.entryAddr, 1, sizeof(ph.entryAddr), out) != sizeof(ph.entryAddr))
-	    printe("Error writing packed header\n");
-	weph.filesz += sizeof(ph.entryAddr);
-    } else {
-	if (fwrite(&ph, 1, sizeof(ph), out) != sizeof(ph))
-	    printe("Error writing packed header\n");
-	weph.filesz += sizeof(ph);
-    }
+    if (fwrite(&ph, 1, sizeof(ph), out) != sizeof(ph))
+	printe("Error writing packed header\n");
+    weph.filesz += sizeof(ph);
 
     /* looping on the program headers to pack them */
     for (i = 0; i < eh->phnum; i++) {
@@ -573,15 +527,9 @@ void packing(FILE * out, FILE * in, u32 base, int use_asm_n2e) {
 	printv("Section packed, from %u to %u bytes, ratio = %5.2f%%\n", section_size, packed_size, 100.0 * (int) (section_size - packed_size) / section_size);
 
 	SWAP_PACKED_SECTION_HEADER(psh);
-	if (use_asm_n2e == 2) {  // we don't need compressed size
-	    if (fwrite(&psh, 1, 3 * sizeof(u32), out) != 3 * sizeof(u32))
-	        printe("Error writing packed section header.\n");
-	    weph.filesz += 3 * sizeof(u32);
-	} else {
-	    if (fwrite(&psh, 1, sizeof(psh), out) != sizeof(psh))
-	        printe("Error writing packed section header.\n");
-	    weph.filesz += sizeof(psh);
-	}
+	if (fwrite(&psh, 1, sizeof(psh), out) != sizeof(psh))
+	    printe("Error writing packed section header.\n");
+	weph.filesz += sizeof(psh);
 	if (fwrite(packed, 1, packed_size, out) != packed_size)
 	    printe("Error writing packed section.\n");
 	weph.filesz += packed_size;
@@ -662,7 +610,6 @@ int main(int argc, char ** argv) {
 #endif
     FILE * in, * out;
     u32 size_in, size_out;
-    int use_asm_n2e = 0;
     char * pwd;
     char pwd_buf[BUFSIZ + 1];
 
@@ -747,8 +694,6 @@ int main(int argc, char ** argv) {
 	printe("Unable to open output file %s\n", out_name);
     }
 
-    sections = count_sections(in);
-
 #ifndef PS2_PACKER_LITE
     if (!packer_name) {
 	packer_name = "lzma";
@@ -756,19 +701,7 @@ int main(int argc, char ** argv) {
 
     if (!stub_name) {
 	if (!base) {
-	    if (strcmp(packer_name, "n2e") == 0) {
-		if (sections == 1) {
-		    printf("Using special ucl-nrv2e asm (one section) stub\n");
-	    	    snprintf(buffer, BUFSIZ, "stub/%s-asm-one-1d00-stub", packer_name);
-		    use_asm_n2e = 2;
-		} else {
-		    printf("Using special ucl-nrv2e asm (multiple sections) stub\n");
-	    	    snprintf(buffer, BUFSIZ, "stub/%s-asm-1d00-stub", packer_name);
-		    use_asm_n2e = 1;
-		}
-	    } else {
-	        snprintf(buffer, BUFSIZ, "stub/%s-1d00-stub", packer_name);
-	    }
+	    snprintf(buffer, BUFSIZ, "stub/%s-1d00-stub", packer_name);
 	} else {
 	    snprintf(buffer, BUFSIZ, "stub/%s-0088-stub", packer_name);
 	}
@@ -829,7 +762,7 @@ int main(int argc, char ** argv) {
     prepare_out(out, base);
 
     printv("Packing.\n");
-    packing(out, in, base, use_asm_n2e);
+    packing(out, in, base);
 
     printv("Done!\n");
 

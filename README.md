@@ -13,7 +13,6 @@ Is being done following a modular design, so anybody can write any kind of modul
  - `lzo` module.
  - `lz4` module.
  - `lzma` module. 
- - Three `ucl` modules (n2b, n2d and n2e)
  - `null` module, for demo purpose only.
 
 # TODO
