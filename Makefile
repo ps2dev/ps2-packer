@@ -7,7 +7,9 @@ LIBZA = -lz
 LIBLZMAA = lzma/lzma.a
 LZMA_MT ?= 1
 ifeq ($(LZMA_MT),1)
-	LIBLZMAA += -lpthread
+	ifneq ($(findstring MINGW, $(SYSTEM)), MINGW)
+		LIBLZMAA += -lpthread
+	endif
 endif
 LZMA_CPPFLAGS = -I common/lzma
 VERSION = 1.1.0
