@@ -34,7 +34,7 @@ static void printe(char * fmt, ...) {
 
 int pack_section(const u8 * source, u8 ** dest, u32 source_size) {
     size_t propsSize, packed_size;
-    u8 * packed;
+    u8 * packed, * packed_resized;
     CLzmaEncProps props;
     SRes res;
 
@@ -57,7 +57,9 @@ int pack_section(const u8 * source, u8 ** dest, u32 source_size) {
     if ((res != SZ_OK) || (propsSize != LZMA_PROPS_SIZE))
         printe("Error during LzmaEncode.\n");
 
-    packed = realloc(packed, propsSize + packed_size);
+    packed_resized = realloc(packed, propsSize + packed_size);
+    if (packed_resized != NULL)
+        packed = packed_resized;
 
     *dest = packed;
 
