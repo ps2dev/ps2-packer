@@ -174,8 +174,9 @@ directory, and `ee-gcc` under your path.
 Don't look at the `dist` target in the `Makefile`, it's only for me to build
 the various packages.
 
+
 ## Author
-  Nicolas "Pixel" Noble <pixel@nobis-crew.org> - http://www.nobis-crew.org
+Nicolas "Pixel" Noble \<[pixel@nobis-crew.org](mailto:pixel@nobis-crew.org)\> - http://www.nobis-crew.org
 
 ## Where to find
 
