@@ -2,12 +2,12 @@
 
 ![CI](https://github.com/ps2dev/ps2-packer/workflows/CI/badge.svg)
 
-# Overview
+## Overview
 
 Just like [UPX](http://upx.sourceforge.net/ "UPX"), this tool is designed to help you
 create `packed ELF` to run on the `PS2`. 
 
-# Modules
+## Modules
 Is being done following a modular design, so anybody can write any kind of module to it. It actually contains:
  - `zlib` module.
  - `lzo` module.
@@ -15,19 +15,19 @@ Is being done following a modular design, so anybody can write any kind of modul
  - `lzma` module. 
  - `null` module, for demo purpose only.
 
-# TODO
+## TODO
   - Changing current module design to pass on arguments.
   - Write a proper documentation about "how to write new modules".
   - Add RC4 modules.
 
-# History
+## History
 
 Well, I wrote this piece of junk in one day, because Drakonite said me zlib
 would be better than lzo, and that it would be quite a challenge to get it
 working for PS2. I wanted to see if he was right :)
 
 
-# Source code and legal stuff
+## Source code and legal stuff
 
   This code is covered by GPL. Actually, I don't give a shit about licenses
 and stuff. If you don't like it covered by GPL, just ask me, and we'll change
@@ -52,7 +52,7 @@ like proceeding so. If you want real and *legit* ps2 development, go on the
 genuine ps2dev website, that is, http://ps2dev.org
 
 
-# How it works
+## How it works
 ```
   Usage: ps2-packer [-v] [-b X] [-p X] [-s X] [-a X] <in_elf> <out_elf>
   
@@ -88,7 +88,7 @@ the address you specified.
 results.
 
 
-# Examples
+## Examples
 ```
 ~$ ./ps2-packer ./ps2menu.elf ./ps2menu-packed.elf
 PS2-Packer v0.3 (C) 2004 Nicolas "Pixel" Noble
@@ -150,7 +150,7 @@ All data written, writing program header.
 Done!
 ```
 
-# Comparing Results
+## Comparing Results
 ```
 $ ls -l ps2menu.elf ps2menu-packed*
 -rw-r--r--    1 pixel    pixel      444240 Aug 12 23:33 ps2menu.elf
@@ -160,13 +160,13 @@ $ ls -l ps2menu.elf ps2menu-packed*
 ```
 
 
-# Bugs and limitations
+## Bugs and limitations
 
 - It's poorly coded :-P
 - Stubs have to be in one single program header.
 
 
-# How to compile
+## How to compile
 
 Current compilation options requires `libz.a` and `libucl.a` to reside at
 `/usr/lib/libz.a` and `/usr/lib/libucl.a` (I do that only to statically link
@@ -180,11 +180,11 @@ Don't look at the `dist` target in the `Makefile`, it's only for me to build
 the various packages.
 
 
-# Author
+## Author
   Nicolas "Pixel" Noble <pixel@nobis-crew.org> - http://www.nobis-crew.org
 
 
-# Where to find
+## Where to find
 
 The "official" webpage for this tool is at on my personal webspace:
   
@@ -200,7 +200,7 @@ http://cvs.ps2dev.org/ps2-packer/
 at http://ps2dev.org/ and be sure to drop by #ps2dev in EfNet.
 
 
-# Thanks and greetings
+## Thanks and greetings
 
   They go to adresd, blackd_wd, drakonite, emoon, gorim, hiryu, herben, jenova,
 linuzapp, oobles, oopo, mrbrown, nagra, neov, nik, t0mb0la, tyranid
