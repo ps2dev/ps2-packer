@@ -175,6 +175,7 @@ void *
 get_symbol (void *handle, char *symbol_name)
 {
   void *symptr;
+  symptr = NULL;
 #ifdef  DJGPP
   st_symbol_t *sym = map_get (dxe_map, handle);
   if (sym == NULL)
