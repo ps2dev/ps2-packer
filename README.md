@@ -5,20 +5,23 @@
 ## Overview
 
 Just like [UPX](http://upx.sourceforge.net/ "UPX"), this tool is designed to help you
-create `packed ELF` to run on the `PS2`. 
+create `packed ELF` to run on the `PS2`.
 
 ## Modules
+
 Is being done following a modular design, so anybody can write any kind of module to it. It actually contains:
- - `zlib` module.
- - `lzo` module.
- - `lz4` module.
- - `lzma` module. 
- - `null` module, for demo purpose only.
+
+*   `zlib` module.
+*   `lzo` module.
+*   `lz4` module.
+*   `lzma` module.
+*   `null` module, for demo purpose only.
 
 ## TODO
-  - Changing current module design to pass on arguments.
-  - Write a proper documentation about "how to write new modules".
-  - Add RC4 modules.
+
+*   Changing current module design to pass on arguments.
+*   Write a proper documentation about "how to write new modules".
+*   Add RC4 modules.
 
 ## History
 
@@ -28,29 +31,30 @@ working for PS2. I wanted to see if he was right :)
 
 ## Source code and legal stuff
 
-  This code is covered by GPL. Actually, I don't give a shit about licenses
+This code is covered by GPL. Actually, I don't give a shit about licenses
 and stuff. If you don't like it covered by GPL, just ask me, and we'll change
 it. The only problem is it uses modified version of a lot of GPLed code, so...
 
-  This code was inspired by various sources, especially sjcrunch's main.c, and
+This code was inspired by various sources, especially sjcrunch's main.c, and
 sjuncrunch. Some idea from mrbrown too :)
 
-  Beeing a ps2dev.org developper got me banned from ps2ownz.com's website. Thus,
+Beeing a ps2dev.org developper got me banned from ps2ownz.com's website. Thus,
 as a special exception to the GPL, since I can not go on their forums, and react
 and help people about that software, I to NOT give them the autorization to
 mirror these packages on their website, only to link to the homepage of this
 project, that is, http://www.nobis-crew.org/ps2-packer nor are they authorized
 to support their users on their forums on questions about that software.
 
-  If you want to reach me, and find support about ps2-packer, either ask me
+If you want to reach me, and find support about ps2-packer, either ask me
 directly, by mail, or by reaching me on IRC (channel #ps2dev on EfNet), or ask
 your questions on ps2dev.org's forums and ps2-scene's forums.
 
-  I actually know they won't give a shit about these restrictions, but I felt
+I actually know they won't give a shit about these restrictions, but I felt
 like proceeding so. If you want real and *legit* ps2 development, go on the
 genuine ps2dev website, that is, http://ps2dev.org
 
 ## How it works
+
 ```txt
   Usage: ps2-packer [-v] [-b X] [-p X] [-s X] [-a X] <in_elf> <out_elf>
   
@@ -71,21 +75,22 @@ genuine ps2dev website, that is, http://ps2dev.org
 ```
 
 Now, you have to understand the mechanisms.
-  
-  In normal mode, the output elf will contain one program section. Its loading
+
+In normal mode, the output elf will contain one program section. Its loading
 location depends on the selected stub. For example, with a stub loading at
 0x1d00000, compressed data will be located *below* that address. I provide
 
-  However, if you specify a base loading address on the command line, the data
+However, if you specify a base loading address on the command line, the data
 will be forced to reside at a certain location. That's the alternative packing
 method. The output elf will contain two program sections. The first one will
 be the uncruncher stub. The second section contains the packed data, loaded at
 the address you specified.
 
-  So, depending on your needs, just move the data around, to get the desired
+So, depending on your needs, just move the data around, to get the desired
 results.
 
 ## Examples
+
 ```txt
 ~$ ./ps2-packer ./ps2menu.elf ./ps2menu-packed.elf
 PS2-Packer v0.3 (C) 2004 Nicolas "Pixel" Noble
@@ -148,6 +153,7 @@ Done!
 ```
 
 ## Comparing Results
+
 ```txt
 $ ls -l ps2menu.elf ps2menu-packed*
 -rw-r--r--    1 pixel    pixel      444240 Aug 12 23:33 ps2menu.elf
@@ -158,8 +164,8 @@ $ ls -l ps2menu.elf ps2menu-packed*
 
 ## Bugs and limitations
 
-- It's poorly coded :-P
-- Stubs have to be in one single program header.
+*   It's poorly coded :-P
+*   Stubs have to be in one single program header.
 
 ## How to compile
 
@@ -174,30 +180,32 @@ directory, and `ee-gcc` under your path.
 Don't look at the `dist` target in the `Makefile`, it's only for me to build
 the various packages.
 
-
 ## Author
-Nicolas "Pixel" Noble \<[pixel@nobis-crew.org](mailto:pixel@nobis-crew.org)\> - http://www.nobis-crew.org
+
+Nicolas "Pixel" Noble <<pixel@nobis-crew.org>> - http://www.nobis-crew.org
 
 ## Where to find
 
 The "official" webpage for this tool is at on my personal webspace:
-  
+
 ```txt
 http://www.nobis-crew.org/ps2-packer/
 ```
 
 However, you can find the latests CVS changes into ps2dev's CVS:
+
 ```txt
 http://cvs.ps2dev.org/ps2-packer/
 ```
-  For more informations about it, feel free to go on ps2dev's website located
+
+For more informations about it, feel free to go on ps2dev's website located
 at http://ps2dev.org/ and be sure to drop by #ps2dev in EfNet.
 
 ## Thanks and greetings
 
-  They go to adresd, blackd_wd, drakonite, emoon, gorim, hiryu, herben, jenova,
+They go to adresd, blackd\_wd, drakonite, emoon, gorim, hiryu, herben, jenova,
 linuzapp, oobles, oopo, mrbrown, nagra, neov, nik, t0mb0la, tyranid
 
 and maybe a few other people I forgot at #ps2dev :)
 
-  Big special thanks to LavosSpawn who helped me reducing the asm stub ;)
+Big special thanks to LavosSpawn who helped me reducing the asm stub ;)
