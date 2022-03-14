@@ -26,7 +26,6 @@ Well, I wrote this piece of junk in one day, because Drakonite said me zlib
 would be better than lzo, and that it would be quite a challenge to get it
 working for PS2. I wanted to see if he was right :)
 
-
 ## Source code and legal stuff
 
   This code is covered by GPL. Actually, I don't give a shit about licenses
@@ -50,7 +49,6 @@ your questions on ps2dev.org's forums and ps2-scene's forums.
   I actually know they won't give a shit about these restrictions, but I felt
 like proceeding so. If you want real and *legit* ps2 development, go on the
 genuine ps2dev website, that is, http://ps2dev.org
-
 
 ## How it works
 ```
@@ -86,7 +84,6 @@ the address you specified.
 
   So, depending on your needs, just move the data around, to get the desired
 results.
-
 
 ## Examples
 ```
@@ -159,12 +156,10 @@ $ ls -l ps2menu.elf ps2menu-packed*
 -rw-r--r--    1 pixel    pixel      239064 Aug 13 15:08 ps2menu-packed-lzo.elf
 ```
 
-
 ## Bugs and limitations
 
 - It's poorly coded :-P
 - Stubs have to be in one single program header.
-
 
 ## How to compile
 
@@ -179,10 +174,8 @@ directory, and `ee-gcc` under your path.
 Don't look at the `dist` target in the `Makefile`, it's only for me to build
 the various packages.
 
-
 ## Author
   Nicolas "Pixel" Noble <pixel@nobis-crew.org> - http://www.nobis-crew.org
-
 
 ## Where to find
 
@@ -198,7 +191,6 @@ http://cvs.ps2dev.org/ps2-packer/
 ```
   For more informations about it, feel free to go on ps2dev's website located
 at http://ps2dev.org/ and be sure to drop by #ps2dev in EfNet.
-
 
 ## Thanks and greetings
 
