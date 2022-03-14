@@ -51,7 +51,7 @@ like proceeding so. If you want real and *legit* ps2 development, go on the
 genuine ps2dev website, that is, http://ps2dev.org
 
 ## How it works
-```
+```txt
   Usage: ps2-packer [-v] [-b X] [-p X] [-s X] [-a X] <in_elf> <out_elf>
   
   Options description:
@@ -86,7 +86,7 @@ the address you specified.
 results.
 
 ## Examples
-```
+```txt
 ~$ ./ps2-packer ./ps2menu.elf ./ps2menu-packed.elf
 PS2-Packer v0.3 (C) 2004 Nicolas "Pixel" Noble
 This is free software with ABSOLUTELY NO WARRANTY.
@@ -106,7 +106,7 @@ All data written, writing program header.
 Done!
 ```
 
-```
+```txt
 ~$ ./ps2-packer -b 0x1b00000 ./ps2menu.elf ./ps2menu-packed-alt.elf
 PS2-Packer v0.3 (C) 2004 Nicolas "Pixel" Noble
 This is free software with ABSOLUTELY NO WARRANTY.
@@ -127,7 +127,7 @@ All data written, writing program header.
 Done!
 ```
 
-```
+```txt
 $ ./ps2-packer -p lzo ./ps2menu.elf ./ps2menu-packed-lzo.elf
 PS2-Packer v0.3 (C) 2004 Nicolas "Pixel" Noble
 This is free software with ABSOLUTELY NO WARRANTY.
@@ -148,7 +148,7 @@ Done!
 ```
 
 ## Comparing Results
-```
+```txt
 $ ls -l ps2menu.elf ps2menu-packed*
 -rw-r--r--    1 pixel    pixel      444240 Aug 12 23:33 ps2menu.elf
 -rw-r--r--    1 pixel    pixel      164124 Aug 13 15:07 ps2menu-packed.elf
@@ -181,12 +181,12 @@ the various packages.
 
 The "official" webpage for this tool is at on my personal webspace:
   
-```
+```txt
 http://www.nobis-crew.org/ps2-packer/
 ```
 
 However, you can find the latests CVS changes into ps2dev's CVS:
-```
+```txt
 http://cvs.ps2dev.org/ps2-packer/
 ```
   For more informations about it, feel free to go on ps2dev's website located
