@@ -758,7 +758,7 @@ int main(int argc, char ** argv) {
     size_in = ftell(in);
     size_out = data_pointer;
 
-    printf("File compressed, from %i to %i bytes, ratio = %5.2f%%\n", size_in, size_out, 100.0 * (size_in - size_out) / size_in);
+    printf("File compressed, from %u to %u bytes, ratio = %5.2f%%\n", size_in, size_out, 100.0 * (size_in - size_out) / size_in);
 
     fclose(out);
     fclose(in);
