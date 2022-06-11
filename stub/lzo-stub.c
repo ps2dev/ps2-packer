@@ -5,7 +5,8 @@
 #include "minilzo.h"
 
 void Decompress(u8 *dest, const u8 *src, u32 dst_size, u32 src_size) {
-    int r, unpack_size;
+    int r;
+    u32 unpack_size;
     
     r = lzo1x_decompress(src, src_size, dest, &unpack_size, NULL);
     

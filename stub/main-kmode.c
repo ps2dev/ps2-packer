@@ -34,7 +34,6 @@ typedef int (*main_ptr)(int argc, char ** argv);
 
 int main(int argc, char ** argv) {
     u8 * compressedData;
-    packed_SectionHeader * sectionHeader;
     int i;
 
 
@@ -45,6 +44,7 @@ int main(int argc, char ** argv) {
     ee_kmode_enter();
 
     for (i = 0; i < PackedELF->numSections; i++) {
+    packed_SectionHeader * sectionHeader;
 	sectionHeader = (packed_SectionHeader *) compressedData;
 	compressedData += sizeof(packed_SectionHeader);
 	Decompress((u8 *) sectionHeader->virtualAddr, compressedData, sectionHeader->originalSize, sectionHeader->compressedSize);
