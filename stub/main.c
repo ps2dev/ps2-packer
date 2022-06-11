@@ -48,6 +48,11 @@ struct args {
 typedef int (*main_ptr)(struct args);
 #endif
 
+// With this line we disabled the patched functionalities
+DISABLE_PATCHED_FUNCTIONS();
+// With this line we disabled the extra functionalities for timers
+DISABLE_EXTRA_TIMERS_FUNCTIONS();
+
 int main(int argc, char ** argv) {
     u8 * compressedData;
     packed_SectionHeader * sectionHeader;
