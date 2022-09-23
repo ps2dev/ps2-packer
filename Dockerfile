@@ -1,8 +1,7 @@
 # First stage of Dockerfile
-FROM alpine:latest
+ARG BASE_DOCKER_IMAGE
 
-ENV PS2DEV /usr/local/ps2dev
-ENV PATH   $PATH:${PS2DEV}/ee/bin
+FROM $BASE_DOCKER_IMAGE
 
 COPY . /src
 
