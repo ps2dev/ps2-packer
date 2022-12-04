@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     container: ${{ github.repository_owner }}/ps2sdk:latest
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
 
     - name: Install dependencies
       run: |
