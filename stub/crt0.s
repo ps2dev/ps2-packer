@@ -54,13 +54,15 @@ zerobss:
 	la	$2, _fbss
 	la	$3, _end
 loop:
-	nop
-	nop
-	nop
-	sq	$0,($2)
 	sltu	$1,$2,$3
-	bne	$1,$0,loop
+	beq     $1,$0,zbss_done
+	nop
+	nop
+	sq	    $0,($2)
+    bgez    $0, loop
 	addiu	$2,$2,16
+
+zbss_done:
 
 # Some program loaders (such as Pukklink) execute programs as a thread, but
 # support passing argc and argv values via a0.  This also indicates that when
