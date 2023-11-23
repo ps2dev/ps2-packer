@@ -29,7 +29,7 @@
 #include "dlopen.h"
 #endif
 
-#ifdef _WIN32
+#if defined(_WIN32) || defined(__CYGWIN__)
 #define SUFFIX ".dll"
 #elif defined (__APPLE__)
 #define SUFFIX ".dylib"
