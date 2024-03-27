@@ -6,7 +6,10 @@ FROM $BASE_DOCKER_IMAGE
 COPY . /src
 
 RUN apk add build-base zlib-dev
-RUN cd /src && make clean all install
+RUN cd /src && \
+    make -j $(getconf _NPROCESSORS_ONLN) clean && \
+    make -j $(getconf _NPROCESSORS_ONLN) && \
+    make -j $(getconf _NPROCESSORS_ONLN) install
 
 # Second stage of Dockerfile
 FROM alpine:latest
