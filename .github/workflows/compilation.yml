@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     container: ${{ github.repository_owner }}/ps2sdk:latest
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
     - name: Install dependencies
       run: |
@@ -19,4 +19,6 @@ jobs:
 
     - name: Compile project
       run: |
-        make clean all install
+        make -j $(getconf _NPROCESSORS_ONLN) clean
+        make -j $(getconf _NPROCESSORS_ONLN) all
+        make -j $(getconf _NPROCESSORS_ONLN) install
