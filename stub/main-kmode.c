@@ -9,19 +9,27 @@
 
 #include "packer-stub.h"
 
+/* Zero exactly [ptr, ptr + size). ptr and the loop flag are written by the asm, so they are output
+   operands, and the flag is early-clobber so it cannot share a register with end. */
 static void fast_memzero(u8 * ptr, u32 size) {
-    u32 t;
+    u8 * end = ptr + size;
+    u32 more;
+    if (!size)
+	return;
     __asm__ volatile ("\n"
-	"\taddu      %0, %1, %2\n"
+	"\t.set      push\n"
+	"\t.set      noreorder\n"
 	"1:\n"
 	"\tnop\n"
 	"\tnop\n"
 	"\tnop\n"
-	"\tsb        $0, 0(%1)\n"
-	"\tsltu      %2, %1, %0\n"
-	"\taddiu     %1, 1\n"
-	"\tbnez      %2, 1b\n"
-	: "=r" (t) : "r" (ptr), "r" (size)
+	"\tsb        $0, 0(%0)\n"
+	"\taddiu     %0, %0, 1\n"
+	"\tsltu      %1, %0, %2\n"
+	"\tbnez      %1, 1b\n"
+	"\tnop\n"
+	"\t.set      pop\n"
+	: "+r" (ptr), "=&r" (more) : "r" (end) : "memory"
     );
 }
 

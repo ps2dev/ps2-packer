@@ -501,11 +501,13 @@ void packing(FILE * out, FILE * in, u32 base) {
         pdata = (loadbuf + eph[i].offset);
 	section_size = eph[i].filesz;
 
-	psh.originalSize = section_size;
 	psh.virtualAddr = eph[i].vaddr;
 	psh.zeroByteSize = eph[i].memsz - eph[i].filesz;
 
 	remove_section_zeroes(pdata, &section_size, &psh.zeroByteSize);
+	/* The stub decompresses originalSize bytes and zero-fills from there, so it must be the
+	   trimmed size: the bytes remove_section_zeroes() took off the end are now in zeroByteSize. */
+	psh.originalSize = section_size;
 	printv("Loaded section: %08X bytes (with %08X zeroes) based at %08X\n", psh.originalSize, psh.zeroByteSize, psh.virtualAddr);
 
 #ifndef PS2_PACKER_LITE
